@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "MANFAAT-mobile",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}

@@ -1,0 +1,7 @@
+{
+  "name": "MANFAAT-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
