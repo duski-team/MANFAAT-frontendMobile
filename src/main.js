@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
+import BaseLayout from "./components/base/BaseLayout.vue";
+// import BaseModal from "./components/base/BaseModal.vue";
 
 import { IonicVue } from '@ionic/vue';
 
@@ -26,6 +28,9 @@ import './theme/variables.css';
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
+
+app.component("base-layout", BaseLayout)
+// app.component("base-modal", BaseModal)
   
 router.isReady().then(() => {
   app.mount('#app');

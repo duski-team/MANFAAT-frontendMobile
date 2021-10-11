@@ -5,7 +5,6 @@
 	"server": {
 		"url": "http://192.168.123.7:8100",
 		"cleartext": true
-	  },
+	},
 	"bundledWebRuntime": false
-
 }
