@@ -5,8 +5,27 @@
         <ion-icon slot="icon-only" :icon="add"></ion-icon>
       </ion-button>
     </template>
+
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <ion-item lines="none">
-      <ion-label>{{ currentDate }}</ion-label>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <ion-label>
+              <h3>{{ hari }}</h3>
+              <h3>{{ tanggal }}</h3>
+            </ion-label>
+          </ion-col>
+          <ion-col class="ion-text-end" size="6">
+            <ion-label>
+              <h1>{{ waktu }}</h1>
+            </ion-label>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-item>
     <ion-list v-if="listToko != undefined" class="ion-padding-end">
       <ion-list-header>
@@ -36,6 +55,9 @@
 
 <script>
 import { 
+  IonGrid,
+  IonRow,
+  IonCol,
   IonList,
   IonListHeader,
   IonLabel,
@@ -43,28 +65,40 @@ import {
   IonButton,
   IonIcon,
   loadingController,
+  IonRefresher,
+  IonRefresherContent,
 } from "@ionic/vue";
 import { add } from "ionicons/icons";
 import { ipConfig } from "../config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import moment from "moment";
+import "moment/locale/id" 
 
 export default  {
   name: 'DaftarToko',
   components: {
+    IonGrid,
+    IonRow,
+    IonCol,
     IonList,
     IonListHeader,
     IonLabel,
     IonItem,
     IonButton,
     IonIcon,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
       add,
       listToko: [],
-      namaWilayah: ""
+      namaWilayah: "",
+      hari: "",
+      tanggal: "",
+      waktu: "",
     }
   },
   
@@ -76,6 +110,7 @@ export default  {
 
   async ionViewDidEnter() {
     await this.dataToko();
+    await this.testMoment();
   },
 
   methods: {
@@ -117,7 +152,28 @@ export default  {
     async detailToko(p) {
       await Storage.set({ key: "tokoId", value: p.toString() })
       await this.$router.push("/detailToko");
-    }
+    },
+    async doRefresh(ev)  {
+      console.log(ev);
+      await this.dataToko()
+
+      if (this.listToko) {
+        ev.target.complete()
+      }
+
+    },
+    async testMoment() {
+      this.hari = await moment().format('dddd')
+      this.tanggal = await moment().format('LL')
+      this.waktu = await moment().format('LT')
+      // this.tanggalPesan = await moment().format('YYYY-MM-DD')
+      // let formatMoment = await moment().format('LLLL')
+      // console.log("moment", this.hari);
+      // console.log("moment", this.tanggal);
+      // console.log("moment", this.waktu);
+      // console.log("moment", this.tanggalPesan);
+    },
+
   },
 }
 </script>

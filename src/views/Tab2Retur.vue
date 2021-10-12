@@ -6,8 +6,26 @@
       </ion-button>
     </template>
 
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <ion-item lines="none">
-      <ion-label>{{ currentDate }}</ion-label>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <ion-label>
+              <h3>{{ hari }}</h3>
+              <h3>{{ tanggal }}</h3>
+            </ion-label>
+          </ion-col>
+          <ion-col class="ion-text-end" size="6">
+            <ion-label>
+              <h1>{{ waktu }}</h1>
+            </ion-label>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-item>
     <ion-grid>
       <ion-row>
@@ -62,6 +80,8 @@ import {
   IonListHeader,
   IonButton,
   IonIcon,
+  IonRefresher,
+  IonRefresherContent,
   loadingController,
 } from "@ionic/vue";
 import { add } from "ionicons/icons";
@@ -69,6 +89,8 @@ import { useRouter } from "vue-router";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "../config";
 import axios from "axios";
+import moment from "moment";
+import "moment/locale/id" 
 
 export default {
   name: "ReturOrder",
@@ -82,11 +104,16 @@ export default {
     IonListHeader,
     IonButton,
     IonIcon,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
       add,
       listRetur: [],
+      hari: "",
+      tanggal: "",
+      waktu: "",
     };
   },
   setup() {
@@ -96,6 +123,7 @@ export default {
   },
   async ionViewDidEnter() {
     await this.getRetur();
+    await this.testMoment()
   },
   methods: {
     async getRetur() {
@@ -128,6 +156,27 @@ export default {
       } catch (err) {
         console.log(err, "errornya listRetur");
       }
+    },
+    async doRefresh(ev)  {
+      // console.log(ev);
+      await this.getRetur()
+
+      if (this.listRetur) {
+        ev.target.complete()
+      }
+
+    },
+
+    async testMoment() {
+      this.hari = await moment().format('dddd')
+      this.tanggal = await moment().format('LL')
+      this.waktu = await moment().format('LT')
+      // this.tanggalPesan = await moment().format('YYYY-MM-DD')
+      // let formatMoment = await moment().format('LLLL')
+      // console.log("moment", this.hari);
+      // console.log("moment", this.tanggal);
+      // console.log("moment", this.waktu);
+      // console.log("moment", this.tanggalPesan);
     },
   },
 };

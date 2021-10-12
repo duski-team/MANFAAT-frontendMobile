@@ -6,18 +6,22 @@
       </ion-button>
     </template>
 
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <ion-item lines="none">
       <ion-grid>
         <ion-row>
           <ion-col size="6">
             <ion-label>
-              <h3>{{ tanggal.harinya }}</h3>
-              <h3>{{ tanggal.tanggalnya }}</h3>
+              <h3>{{ hari }}</h3>
+              <h3>{{ tanggal }}</h3>
             </ion-label>
           </ion-col>
           <ion-col class="ion-text-end" size="6">
             <ion-label>
-              <h1>{{ dateTime.hours }}:{{ dateTime.minutes }}</h1>
+              <h1>{{ waktu }}</h1>
             </ion-label>
           </ion-col>
         </ion-row>
@@ -140,6 +144,8 @@ import {
   IonCol,
   IonSlide,
   IonSlides,
+  IonRefresher,
+  IonRefresherContent,
 } from "@ionic/vue";
 import { useRouter } from "vue-router";
 import { exit } from "ionicons/icons";
@@ -148,6 +154,8 @@ import { ipConfig } from "../config";
 import axios from "axios";
 import DetailPO from "../components/pages/CreatePO.vue";
 // import ModalPO from "../components/sales/ModalPO.vue";
+import moment from "moment";
+import "moment/locale/id" 
 
 export default {
   name: "Purchase Order",
@@ -173,6 +181,8 @@ export default {
     IonCol,
     IonSlide,
     IonSlides,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
@@ -181,9 +191,13 @@ export default {
       listPO: [],
       isItemAvailable: false,
       items: [],
-      tanggal: {},
-      dateTime: {},
+      hari: "",
+      tanggal: "",
+      waktu: "",
+      tanggalPesan: "",
+      // dateTime: {},
       selectedSegment: "1",
+      
     };
   },
   setup() {
@@ -202,8 +216,9 @@ export default {
   async ionViewWillEnter() {
     await this.dataToko();
     await this.dataPO();
-    await this.currentDate();
-    await this.setDateTime();
+    // await this.currentDate();
+    // await this.setDateTime();
+    await this.testMoment()
   },
 
   methods: {
@@ -253,14 +268,22 @@ export default {
           },
         });
         // console.log(dataResult.data);
-        vm.listPO = dataResult.data.sort((a, b) =>
+        // let penampung = []
+        // dataResult.data.forEach(el => {
+        //   console.log(el.tanggalPesan, "<<<");
+        //     if (el.tanggalPesan == this.tanggalPesan) {
+        //       penampung.push(el.tanggalPesan)
+        //     }
+        // }) 
+        // console.log(penampung, ">>>");
+        vm.listPO = await dataResult.data.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
-
-        if (vm.listPO) {
-          loading.dismiss();
-        }
-        console.log(vm.listPO);
+        loading.dismiss()
+        // if (vm.listPO) {
+        //   loading.dismiss();
+        // }
+        // console.log(vm.listPO);
       } catch (err) {
         console.log(err, "errornya dataPO");
       }     
@@ -314,122 +337,40 @@ export default {
         this.isItemAvailable = false;
       }
     },
-    // async presentLoadingWithOptions() {
-    //   const loading = await loadingController.create({
-    //     spinner: null,
-    //     duration: this.timeout,
-    //     message: "Click the backdrop to dismiss early...",
-    //     translucent: true,
-    //     cssClass: "custom-class custom-loading",
-    //     backdropDismiss: true,
-    //   });
 
-    //   await loading.present();
+    async doRefresh(ev)  {
+      console.log(ev);
+      await this.dataToko()
+      await this.dataPO()
+      await this.testMoment()
 
-    //   setTimeout(function() {
-    //     loading.dismiss();
-    //   }, this.timeout);
-    // },
-
-    async currentDate() {
-      let d = await new Date();
-
-      let hari = d.getDay();
-      let bulan = d.getMonth();
-      let tahun = d.getFullYear();
-      let tanggal = d.getDate();
-      // let jam = d.getHours();
-      // let menit = d.getMinutes();
-
-      switch (hari) {
-        case 0:
-          hari = "Minggu";
-          break;
-        case 1:
-          hari = "Senin";
-          break;
-        case 2:
-          hari = "Selasa";
-          break;
-        case 3:
-          hari = "Rabu";
-          break;
-        case 4:
-          hari = "Kamis";
-          break;
-        case 5:
-          hari = "Jum'at";
-          break;
-        case 6:
-          hari = "Sabtu";
-          break;
+      if (this.listToko) {
+        ev.target.complete()
       }
-
-      switch (bulan) {
-        case 0:
-          bulan = "Januari";
-          break;
-        case 1:
-          bulan = "Februari";
-          break;
-        case 2:
-          bulan = "Maret";
-          break;
-        case 3:
-          bulan = "April";
-          break;
-        case 4:
-          bulan = "Mei";
-          break;
-        case 5:
-          bulan = "Juni";
-          break;
-        case 6:
-          bulan = "Juli";
-          break;
-        case 7:
-          bulan = "Agustus";
-          break;
-        case 8:
-          bulan = "September";
-          break;
-        case 9:
-          bulan = "Oktober";
-          break;
-        case 10:
-          bulan = "November";
-          break;
-        case 11:
-          bulan = "Desember";
-          break;
-      }
-      let tampilTanggal = `${tanggal} ${bulan} ${tahun}`;
-      let tampilHari = `${hari}`;
-
-      // let tampilWaktu = `${jam} : ${menit}`
-      this.tanggal.harinya = tampilHari;
-      this.tanggal.tanggalnya = tampilTanggal;
-      // console.log(this.tanggal);
     },
-    setDateTime() {
-      const date = new Date();
-      this.dateTime = {
-        hours: date.getHours(),
-        minutes: date.getMinutes(),
-      };
-      let menit =
-        this.dateTime.minutes < 10
-          ? "0" + this.dateTime.minutes
-          : this.dateTime.minutes;
-      this.dateTime.minutes = menit;
-      // console.log(this.dateTime.minutes);
-      // console.log(menit);
-    },
+
     async segmentChanged(ev) {
       // console.log("segment changed", ev.detail.value);
       this.selectedSegment = ev.detail.value;
     },
     
+    sendDate(x) {
+      let y = moment(x).format("YYYY/MM/DD")
+      console.log(y);
+      return y
+    },
+
+    async testMoment() {
+      this.hari = await moment().format('dddd')
+      this.tanggal = await moment().format('LL')
+      this.waktu = await moment().format('LT')
+      this.tanggalPesan = await moment().format('YYYY-MM-DD')
+      // let formatMoment = await moment().format('LLLL')
+      // console.log("moment", this.hari);
+      // console.log("moment", this.tanggal);
+      // console.log("moment", this.waktu);
+      console.log("moment", this.tanggalPesan);
+    },
   },
 };
 </script>

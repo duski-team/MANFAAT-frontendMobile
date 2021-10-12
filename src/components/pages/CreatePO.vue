@@ -173,6 +173,9 @@ import { ipConfig } from "@/config";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import modalBarang from "./ModalBarang.vue";
+import moment from "moment";
+import "moment/locale/id" 
+
 
 export default {
   name: "DetailPO",
@@ -212,12 +215,15 @@ export default {
       totalHarga: 0,
       totalNominal: 0,
       totalPesanan: 0,
-      tanggal: {}
+      hari: "",
+      tanggal: "",
+      waktu: "",
+      tanggalPesan: ""
     };
   },
   async ionViewDidEnter() {
     await this.getToko();
-    await this.currentDate();
+    await this.testMoment();
     // await this.getAkun();
   },
   setup() {
@@ -361,7 +367,7 @@ export default {
             noPO:vm.noPO,
             masterTokoId:idToko.value,
             jumlahPesanan:vm.totalPesanan,
-            tanggalPesan:vm.tanggal.pesannya,
+            tanggalPesan:vm.tanggalPesan,
             userId:idUser,
             data : isi
           },
@@ -398,85 +404,22 @@ export default {
       this.totalNominal -= dataBarang.totalHarga
       this.totalPesanan -= Number(dataBarang.jumlahBarang)
     },
-    async currentDate() {
-      let d = await new Date();
-
-      let hari = d.getDay();
-      let bulan = d.getMonth();
-      let bulanAngka = d.getMonth();
-      let tahun = d.getFullYear();
-      let tanggal = d.getDate();
-
-      switch (hari) {
-        case 0:
-          hari = "Minggu";
-          break;
-        case 1:
-          hari = "Senin";
-          break;
-        case 2:
-          hari = "Selasa";
-          break;
-        case 3:
-          hari = "Rabu";
-          break;
-        case 4:
-          hari = "Kamis";
-          break;
-        case 5:
-          hari = "Jum'at";
-          break;
-        case 6:
-          hari = "Sabtu";
-          break;
-      }
-
-      switch (bulan) {
-        case 0:
-          bulan = "Januari";
-          break;
-        case 1:
-          bulan = "Februari";
-          break;
-        case 2:
-          bulan = "Maret";
-          break;
-        case 3:
-          bulan = "April";
-          break;
-        case 4:
-          bulan = "Mei";
-          break;
-        case 5:
-          bulan = "Juni";
-          break;
-        case 6:
-          bulan = "Juli";
-          break;
-        case 7:
-          bulan = "Agustus";
-          break;
-        case 8:
-          bulan = "September";
-          break;
-        case 9:
-          bulan = "Oktober";
-          break;
-        case 10:
-          bulan = "November";
-          break;
-        case 11:
-          bulan = "Desember";
-          break;
-      }
-      let tampilTanggal = `${tanggal} ${bulan} ${tahun}`;
-      let tampilHari = `${hari}`;
-      let kirimTanggal = `${tahun}-${bulanAngka+1<10?bulanAngka="0"+bulanAngka:bulanAngka+1}-${tanggal}`
-      this.tanggal.harinya = tampilHari
-      this.tanggal.tanggalnya = tampilTanggal
-      this.tanggal.pesannya = kirimTanggal
-      console.log(this.tanggal.pesannya);
+    sendDate(x) {
+      let y = moment(x).format("YYYY-MM-DD")
+      console.log(y);
+      return y
     },
+    async testMoment() {
+      this.hari = await moment().format('dddd')
+      this.tanggal = await moment().format('LL')
+      this.waktu = await moment().format('LT')
+      this.tanggalPesan = await moment()
+      // let formatMoment = await moment().format('LLLL')
+      console.log("moment", this.hari);
+      console.log("moment", this.tanggal);
+      console.log("moment", this.waktu);
+      console.log("moment", this.tanggalPesan);
+    }
   },
 };
 </script>
