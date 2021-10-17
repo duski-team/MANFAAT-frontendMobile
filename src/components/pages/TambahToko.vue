@@ -8,6 +8,11 @@
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
       </ion-button>
     </template>
+
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <ion-grid v-if="listWilayah">
       <ion-row>
         <ion-col>
@@ -89,6 +94,8 @@ import {
   IonInput,
   IonSelect,
   IonSelectOption,
+  IonRefresher,
+  IonRefresherContent,
   loadingController,
   toastController,
 } from "@ionic/vue";
@@ -112,6 +119,8 @@ export default defineComponent({
     IonInput,
     IonSelect,
     IonSelectOption,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
@@ -147,7 +156,7 @@ export default defineComponent({
             token: dataToken.value,
           },
         });
-        console.log(dataResult.data);
+        // console.log(dataResult.data);
         vm.listWilayah = dataResult.data.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
@@ -214,6 +223,14 @@ export default defineComponent({
         await toast.dismiss()
       } catch (err) {
         console.log(err);
+      }
+    },
+    async doRefresh(ev) {
+      // console.log(ev);
+      await this.getWilayah();
+
+      if (this.listWilayah) {
+        ev.target.complete();
       }
     },
   },

@@ -10,6 +10,8 @@
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
+    <ion-progress-bar v-if="showLoader" :value="testValue"></ion-progress-bar>
+
     <ion-item lines="none">
       <ion-grid>
         <ion-row>
@@ -82,6 +84,7 @@ import {
   IonIcon,
   IonRefresher,
   IonRefresherContent,
+  IonProgressBar,
   loadingController,
 } from "@ionic/vue";
 import { add } from "ionicons/icons";
@@ -106,6 +109,7 @@ export default {
     IonIcon,
     IonRefresher,
     IonRefresherContent,
+    IonProgressBar,
   },
   data() {
     return {
@@ -114,6 +118,8 @@ export default {
       hari: "",
       tanggal: "",
       waktu: "",
+      testValue: 0,
+      showLoader: false,
     };
   },
   setup() {
@@ -136,6 +142,7 @@ export default {
         await loading.present();
 
         let vm = this;
+        // this.runDeterminateProgress()
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
           ipConfig + "/retur/listReturByAccepted/" + 0,
@@ -151,7 +158,8 @@ export default {
         );
 
         if (vm.listRetur) {
-          loading.dismiss();
+          await loading.dismiss();
+          // await this.hideProgressBar();
         }
       } catch (err) {
         console.log(err, "errornya listRetur");
@@ -160,6 +168,7 @@ export default {
     async doRefresh(ev)  {
       // console.log(ev);
       await this.getRetur()
+      await this.testMoment()
 
       if (this.listRetur) {
         ev.target.complete()
@@ -178,6 +187,26 @@ export default {
       // console.log("moment", this.waktu);
       // console.log("moment", this.tanggalPesan);
     },
+
+    showProgressBar() {
+      this.showLoader = true;
+    },
+    hideProgressBar() {
+      this.showLoader = false;
+    },
+    runDeterminateProgress() {
+      this.showProgressBar()
+      for (let index = 0; index <= 100; index++) {
+        this.setPercentBar(+index);
+      }
+    },
+    setPercentBar(i) {
+      setTimeout(() => {
+        let apc = (i / 100)
+        console.log(apc);
+        this.testValue = apc;
+      }, 30 * i);
+    }
   },
 };
 </script>

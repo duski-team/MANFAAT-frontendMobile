@@ -1,5 +1,5 @@
 <template>
-  <base-layout page-title="DetailPO" page-default-back-link="/tabs/order">
+  <base-layout page-title="Buat PO" page-default-back-link="/tabs/order">
   <template v-slot:actions-end>
       <ion-button v-if="listBarang.length" @click="savePO">
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
@@ -8,6 +8,11 @@
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
       </ion-button>
     </template>
+
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <div v-if="dataToko">
       <ion-list>
         <ion-grid>
@@ -24,8 +29,8 @@
               <ion-list-header>
                 <ion-label v-model="tanggal" class="sisi_kanan">
                   <p>Tanggal</p>
-                  <h3>{{ tanggal.harinya }}</h3>
-                  <h4>{{ tanggal.tanggalnya }}</h4>
+                  <h3>{{ hari }}</h3>
+                  <h4>{{ tanggal }}</h4>
                 </ion-label>
               </ion-list-header>
             </ion-col>
@@ -164,6 +169,8 @@ import {
   IonItemSliding,
   IonItemOptions,
   IonItemOption,
+  IonRefresher,
+  IonRefresherContent,
   loadingController,
   alertController
 } from "@ionic/vue";
@@ -201,7 +208,9 @@ export default {
     IonFabButton,
     IonItemSliding,
     IonItemOptions,
-    IonItemOption
+    IonItemOption,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
@@ -278,7 +287,8 @@ export default {
         // console.log("resultnya", JSON.stringify(dataResult))  ;
         // console.log("resultnya", dataResult)  ;
         vm.dataToko = dataResult.data[0][0];
-        vm.noPO = Math.floor(Math.random() * 10000000)
+        // vm.noPO = Math.floor(Math.random() * 10000000)
+        vm.noPO = moment().format("YYMMDD.ddHHmmss")
         
         if (vm.dataToko) {
           loading.dismiss();
@@ -364,12 +374,12 @@ export default {
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
           ipConfig + "/transaksi/screeningPO", {
-            noPO:vm.noPO,
-            masterTokoId:idToko.value,
-            jumlahPesanan:vm.totalPesanan,
-            tanggalPesan:vm.tanggalPesan,
-            userId:idUser,
-            data : isi
+            noPO: vm.noPO,
+            masterTokoId: idToko.value,
+            jumlahPesanan: vm.totalPesanan,
+            tanggalPesan: vm.tanggalPesan,
+            userId: idUser,
+            data: isi
           },
           {
             headers: {
@@ -415,11 +425,19 @@ export default {
       this.waktu = await moment().format('LT')
       this.tanggalPesan = await moment()
       // let formatMoment = await moment().format('LLLL')
-      console.log("moment", this.hari);
-      console.log("moment", this.tanggal);
-      console.log("moment", this.waktu);
-      console.log("moment", this.tanggalPesan);
-    }
+      // console.log("moment", this.hari);
+      // console.log("moment", this.tanggal);
+      // console.log("moment", this.waktu);
+      // console.log("moment", this.tanggalPesan);
+    },
+    async doRefresh(ev) {
+    await this.getToko();
+    await this.testMoment();
+
+      if (this.dataToko) {
+        ev.target.complete();
+      }
+    },
   },
 };
 </script>

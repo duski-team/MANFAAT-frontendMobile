@@ -89,6 +89,7 @@ export default {
     return {
       username: "",
       password: "",
+      note: ""
       // eye,
     };
   },
@@ -101,7 +102,7 @@ export default {
           password: vm.password,
         });
         // console.log(JSON.stringify(dataSent));
-        // console.log(dataSent);
+        console.log(dataSent.data);
         if (dataSent.data[0].token) {
           await Storage.set({
             key: "token",
@@ -112,11 +113,14 @@ export default {
             value: dataSent.data[1].id,
           });
           vm.$router.push("/tabs/order");
+          this.username = "";
+          this.password = "";
         } else {
           vm.note = dataSent.data.message;
+          console.log(vm.note , "<<<");
         }
       } catch (err) {
-        console.log(err);
+        console.log("errorHandler", err);
       }
     },
   },

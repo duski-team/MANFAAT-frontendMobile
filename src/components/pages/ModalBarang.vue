@@ -6,6 +6,10 @@
       </ion-button>
     </template> -->
 
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <ion-grid>
       <ion-row>
         <ion-col>
@@ -45,7 +49,7 @@
             <ion-item lines="none">
               <ion-grid>
                 <ion-row>
-                  <ion-col style="background-color: red">
+                  <ion-col>
                     <ion-button
                       expand="block"
                       class="tombol-simpan"
@@ -95,6 +99,8 @@ import {
   IonSelectOption,
   IonInput,
   modalController,
+  IonRefresher,
+  IonRefresherContent,
   loadingController,
 } from "@ionic/vue";
 // import { close } from "ionicons/icons";
@@ -119,6 +125,8 @@ export default {
     IonSelect,
     IonSelectOption,
     IonInput,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
@@ -177,7 +185,7 @@ export default {
       try {
         const loading = await loadingController.create({
           spinner: "circles",
-          message: "Loading...",
+          message: "Mohon Tunggu...",
           translucent: true,
         });
         await loading.present();
@@ -219,6 +227,14 @@ export default {
         // console.log("barangnya", vm.listBarang);
       } catch (err) {
         console.log(err, "catchnya jon");
+      }
+    },
+    async doRefresh(ev) {
+      // console.log(ev);
+      await this.getToko();
+
+      if (this.listBarang) {
+        ev.target.complete();
       }
     },
   },

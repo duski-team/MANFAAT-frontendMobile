@@ -49,62 +49,64 @@
             <ion-row>
               <ion-col size="12">
                 <ion-list>
-            <ion-searchbar
-              type="text"
-              debounce="500"
-              @ionChange="searchToko($event)"
-            ></ion-searchbar>
-            <ion-list v-if="isItemAvailable">
-              <ion-item
-                v-for="(item, index) in items"
-                :key="index"
-                @click="openDetailPO(item.id)"
-                lines="full"
-              >
-                <ion-label>
-                  <h2>{{ item.namaToko }}</h2>
-                  <p>{{ item.namaWilayah }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-            <ion-list v-else>
-              <ion-item
-                v-for="(listToko, index) in listToko"
-                :key="index"
-                @click="openDetailPO(listToko.id)"
-                lines="full"
-              >
-                <ion-label>
-                  <h2>{{ listToko.namaToko }}</h2>
-                  <p>{{ listToko.namaWilayah }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-list>
+                  <ion-searchbar
+                    type="text"
+                    debounce="500"
+                    @ionChange="searchToko($event)"
+                  ></ion-searchbar>
+
+                  <ion-list v-if="isItemAvailable">
+                    <ion-item
+                      v-for="(item, index) in items"
+                      :key="index"
+                      @click="openDetailPO(item.id)"
+                      lines="full"
+                    >
+                      <!-- <ion-note slot="start">{{ index }}</ion-note> -->
+                      <ion-label>
+                        <h2>{{ item.namaToko }}</h2>
+                        <p>{{ item.namaWilayah }}</p>
+                      </ion-label>
+                    </ion-item>
+                  </ion-list>
+                  <ion-list v-else>
+                    <ion-item
+                      v-for="(listToko, index) in listToko"
+                      :key="index"
+                      @click="openDetailPO(listToko.id)"
+                      lines="full"
+                    >
+                      <ion-note slot="start">{{ index + 1 }}</ion-note>
+                      <ion-label>
+                        <h2>{{ listToko.namaToko }}</h2>
+                        <p>{{ listToko.namaWilayah }}</p>
+                      </ion-label>
+                    </ion-item>
+                  </ion-list>
+                </ion-list>
               </ion-col>
             </ion-row>
           </ion-grid>
-          
         </ion-slide>
 
         <ion-slide v-else-if="selectedSegment == '2'">
           <ion-grid>
             <ion-row>
               <ion-col size="12">
-          <ion-list>
-              <ion-item
-                v-for="(listPO, index) in listPO"
-                :key="index"
-                lines="full"
-                @click="openlistPO(listPO.noPO)"
-              >
-                <ion-label>
-                  <h2>PO: {{ listPO.noPO }}</h2>
-                  <h3>{{ listPO.namaToko}}</h3>
-                  <p>{{ listPO.tanggalPesan }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
+                <ion-list>
+                  <ion-item
+                    v-for="(listPO, index) in listPO"
+                    :key="index"
+                    lines="full"
+                    @click="openlistPO(listPO.noPO)"
+                  >
+                    <ion-label>
+                      <h2>PO: {{ listPO.noPO }}</h2>
+                      <h3>{{ listPO.namaToko }}</h3>
+                      <p>{{ listPO.tanggalPesan }}</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
               </ion-col>
             </ion-row>
           </ion-grid>
@@ -120,6 +122,7 @@
 <script>
 import { ref } from "vue";
 import {
+  loadingController,
   // IonCard,
   // IonCardContent,
   // IonCardTitle,
@@ -138,7 +141,6 @@ import {
   // IonToolbar,
   IonSegment,
   IonSegmentButton,
-  loadingController,
   IonGrid,
   IonRow,
   IonCol,
@@ -146,6 +148,7 @@ import {
   IonSlides,
   IonRefresher,
   IonRefresherContent,
+  IonNote,
 } from "@ionic/vue";
 import { useRouter } from "vue-router";
 import { exit } from "ionicons/icons";
@@ -155,7 +158,7 @@ import axios from "axios";
 import DetailPO from "../components/pages/CreatePO.vue";
 // import ModalPO from "../components/sales/ModalPO.vue";
 import moment from "moment";
-import "moment/locale/id" 
+import "moment/locale/id";
 
 export default {
   name: "Purchase Order",
@@ -183,6 +186,7 @@ export default {
     IonSlides,
     IonRefresher,
     IonRefresherContent,
+    IonNote,
   },
   data() {
     return {
@@ -197,7 +201,6 @@ export default {
       tanggalPesan: "",
       // dateTime: {},
       selectedSegment: "1",
-      
     };
   },
   setup() {
@@ -214,11 +217,31 @@ export default {
   },
 
   async ionViewWillEnter() {
-    await this.dataToko();
-    await this.dataPO();
+    if (!this.listToko) {
+      await this.dataToko();
+    }
+    if (!this.tanggal && !this.waktu) {
+      await this.testMoment();
+      await this.clockInterval();
+    }
+    // await this.dataPO();
     // await this.currentDate();
     // await this.setDateTime();
-    await this.testMoment()
+  },
+  watch: {
+    selectedSegment: function(newSegment, oldSegment) {
+      console.log(newSegment, "new");
+      console.log(oldSegment, "old");
+      if (this.selectedSegment == 2) {
+        if (!this.listPO.length) {
+          this.dataPO();
+        }
+        // this.dataToko()
+      }
+      // else {
+      //   this.dataPO()
+      // }
+    },
   },
 
   methods: {
@@ -240,7 +263,15 @@ export default {
           },
         });
         // console.log("isinya", dataResult.data);
-        vm.listToko = dataResult.data.sort((a, b) =>
+        let setWilayah = [];
+        dataResult.data.forEach((el) => {
+          // console.log(el);
+          if (el.wilayahId == 2) {
+            // console.log(el);
+            setWilayah.push(el);
+          }
+        });
+        vm.listToko = setWilayah.sort((a, b) =>
           a.wilayahId > b.wilayahId ? 1 : b.wilayahId > a.wilayahId ? -1 : 0
         );
 
@@ -251,7 +282,7 @@ export default {
         console.log(err, "errornya datatoko");
       }
     },
-    async dataPO(){
+    async dataPO() {
       try {
         const loading = await loadingController.create({
           spinner: "circles",
@@ -262,33 +293,30 @@ export default {
 
         let vm = this;
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(ipConfig + "/masterPO/listUnaccepted", {
-          headers: {
-            token: dataToken.value,
-          },
-        });
-        // console.log(dataResult.data);
-        // let penampung = []
-        // dataResult.data.forEach(el => {
-        //   console.log(el.tanggalPesan, "<<<");
-        //     if (el.tanggalPesan == this.tanggalPesan) {
-        //       penampung.push(el.tanggalPesan)
-        //     }
-        // }) 
-        // console.log(penampung, ">>>");
+        const dataResult = await axios.get(
+          ipConfig + "/masterPO/listUnaccepted",
+          {
+            headers: {
+              token: dataToken.value,
+            },
+          }
+        );
         vm.listPO = await dataResult.data.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
-        loading.dismiss()
-        // if (vm.listPO) {
-        //   loading.dismiss();
-        // }
-        // console.log(vm.listPO);
+        await loading.dismiss();
       } catch (err) {
         console.log(err, "errornya dataPO");
-      }     
+      }
     },
     async signout() {
+      const loading = await loadingController.create({
+        spinner: "circles",
+        message: "Loading...",
+        translucent: true,
+      });
+      await loading.present();
+
       let vm = this;
       await Storage.set({
         key: "token",
@@ -304,6 +332,7 @@ export default {
       });
       // console.log("token deleted");
       vm.$router.replace("/");
+      await loading.dismiss();
     },
     initializeItems() {
       this.items = this.listToko;
@@ -316,7 +345,7 @@ export default {
     },
 
     async openlistPO(paramsnya) {
-      console.log("ini", paramsnya);
+      // console.log("ini", paramsnya);
       await Storage.set({ key: "noPO", value: paramsnya.toString() });
       await this.$router.push("/detailListPO");
     },
@@ -338,14 +367,15 @@ export default {
       }
     },
 
-    async doRefresh(ev)  {
-      console.log(ev);
-      await this.dataToko()
-      await this.dataPO()
-      await this.testMoment()
+    async doRefresh(ev) {
+      // console.log(ev);
+      await this.dataToko();
+      await this.dataPO();
+      await this.testMoment();
+      await this.clockInterval();
 
       if (this.listToko) {
-        ev.target.complete()
+        ev.target.complete();
       }
     },
 
@@ -353,23 +383,31 @@ export default {
       // console.log("segment changed", ev.detail.value);
       this.selectedSegment = ev.detail.value;
     },
-    
-    sendDate(x) {
-      let y = moment(x).format("YYYY/MM/DD")
-      console.log(y);
-      return y
-    },
+
+    // sendDate(x) {
+    //   let y = moment(x).format("YYYY/MM/DD");
+    //   console.log(y);
+    //   return y;
+    // },
 
     async testMoment() {
-      this.hari = await moment().format('dddd')
-      this.tanggal = await moment().format('LL')
-      this.waktu = await moment().format('LT')
-      this.tanggalPesan = await moment().format('YYYY-MM-DD')
+      this.hari = await moment().format("dddd");
+      this.tanggal = await moment().format("LL");
+      this.waktu = await moment().format("LT");
+      this.tanggalPesan = await moment().format("YYYY-MM-DD");
+
       // let formatMoment = await moment().format('LLLL')
       // console.log("moment", this.hari);
       // console.log("moment", this.tanggal);
-      // console.log("moment", this.waktu);
-      console.log("moment", this.tanggalPesan);
+      console.log("moment", this.waktu);
+      // console.log("moment", this.tanggalPesan);
+    },
+
+    clockInterval() {
+      setInterval(() => {
+        this.testMoment();
+        console.log("a");
+      }, 30000);
     },
   },
 };
