@@ -50,6 +50,14 @@
       Loading...
       </p>
     </ion-list>
+
+    <template v-slot:button-float>
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+          <ion-fab-button @click="searchToko">
+            <ion-icon :icon="search"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+    </template>
   </base-layout>
 </template>
 
@@ -64,14 +72,18 @@ import {
   IonItem,
   IonButton,
   IonIcon,
-  loadingController,
   IonRefresher,
   IonRefresherContent,
+  IonFab,
+  IonFabButton,
+  loadingController,
+  modalController,
 } from "@ionic/vue";
-import { add } from "ionicons/icons";
+import { add, search } from "ionicons/icons";
 import { ipConfig } from "../config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
+import modalToko from "@/components/pages/ModalToko.vue";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id" 
@@ -90,10 +102,13 @@ export default  {
     IonIcon,
     IonRefresher,
     IonRefresherContent,
+    IonFab,
+    IonFabButton,
   },
   data() {
     return {
       add,
+      search,
       listToko: [],
       namaWilayah: "",
       hari: "",
@@ -154,8 +169,9 @@ export default  {
       await this.$router.push("/detailToko");
     },
     async doRefresh(ev)  {
-      console.log(ev);
+      // console.log(ev);
       await this.dataToko()
+      await this.testMoment();
 
       if (this.listToko) {
         ev.target.complete()
@@ -173,7 +189,32 @@ export default  {
       // console.log("moment", this.waktu);
       // console.log("moment", this.tanggalPesan);
     },
+    async searchToko() {
+      // console.log("pencet");
+       const modal = await modalController.create({
+        component: modalToko,
+        // componentProps: { dataBarang: this.listBarang },
+      });
+      // modal.onDidDismiss()
+      //   .then((res) => {
+      //     if (res.data == null) {
+      //       console.log("kosong");
+      //     } else {
+      //       // console.log(res.data.dataBarang, ">>>>");
+      //       const dataRespon = res.data.dataBarang
+      //       this.listBarang.push(dataRespon)
+      //       this.totalNominal += dataRespon.harga*Number(dataRespon.jumlahBarang)
+      //       this.totalPesanan += Number(dataRespon.jumlahBarang)
+      //       // console.log(this.totalNominal, "<<<<");
+      //       console.log(this.listBarang, "<<<<");
+      //     }
+      //   })
+      //   .catch((err) => {
+      //     console.log(err, "diapain ya");
+      //   })
 
+        return await modal.present()
+    }
   },
 }
 </script>

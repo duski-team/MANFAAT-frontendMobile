@@ -1,5 +1,10 @@
 <template>
   <base-layout page-title="Purchase Order" page-default-back-link="/tabs/order">
+
+    <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
     <ion-grid>
       <ion-row>
         <ion-col class="ion-padding">
@@ -56,7 +61,9 @@ import {
   IonListHeader,
   IonLabel,
   IonItem,
-//   loadingController,
+  IonRefresher,
+  IonRefresherContent,
+  loadingController,
 } from "@ionic/vue";
 import { ipConfig } from "@/config";
 import { Storage } from "@capacitor/storage";
@@ -72,11 +79,17 @@ export default {
     IonListHeader,
     IonLabel,
     IonItem,
+    IonRefresher,
+    IonRefresherContent,
   },
   data() {
     return {
       dataPO: [],
     };
+  },
+  setup() {
+    const router = useRouter();
+    return { router };
   },
   async ionViewDidEnter() {
     await this.getDataPO();
@@ -84,12 +97,12 @@ export default {
   methods: {
     async getDataPO() {
       try {
-        // const loading = await loadingController.create({
-        //   spinner: "circles",
-        //   message: "Loading...",
-        //   translucent: true,
-        // });
-        // await loading.present();
+        const loading = await loadingController.create({
+          spinner: "circles",
+          message: "Loading...",
+          translucent: true,
+        });
+        await loading.present();
 
         let vm = this;
         const noPO = await Storage.get({ key: "noPO" });
@@ -105,17 +118,21 @@ export default {
 
         // console.log("resultnya", JSON.stringify(dataResult))  ;
         vm.dataPO = dataResult.data[0];
-        console.log(vm.dataPO, "<<<");
-        console.log(vm.dataPO.noPO, ">>>");
-        // await loadingController.dismiss();
+        // console.log(vm.dataPO, "<<<");
+        // console.log(vm.dataPO.noPO, ">>>");
+        await loadingController.dismiss();
       } catch (err) {
         console.log(err, "catchnya jon");
       }
     },
-  },
-  setup() {
-    const router = useRouter();
-    return { router };
+    async doRefresh(ev) {
+      // console.log(ev);
+      await this.getDataPO();
+      
+      if (this.dataPO) {
+        ev.target.complete();
+      }
+    },
   },
 };
 </script>

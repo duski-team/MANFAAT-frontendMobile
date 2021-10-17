@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import Tabs from '../views/Tabs.vue'
 import SignUp from '../views/SignUp.vue'
 import SignIn from '../views/SignIn.vue'
+import Dashboard from '../views/Dashboard.vue'
 
 const routes = [
   {
@@ -15,6 +16,10 @@ const routes = [
   {
     path: '/signin',
     component: SignIn
+  },
+  {
+    path: '/dashboard',
+    component: Dashboard
   },
   {
     path: '/tabs/',
