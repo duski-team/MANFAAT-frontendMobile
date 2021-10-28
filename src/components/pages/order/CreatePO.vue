@@ -1,6 +1,6 @@
 <template>
   <base-layout page-title="Buat PO" page-default-back-link="/tabs/order">
-  <template v-slot:actions-end>
+    <template v-slot:actions-end>
       <ion-button v-if="listBarang.length" @click="savePO">
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
       </ion-button>
@@ -36,33 +36,33 @@
             </ion-col>
           </ion-row>
         </ion-grid>
-        
-      <ion-card>
-        <ion-card-content>
-        <ion-item>
-          <ion-label>
-            <h2>No. PO :</h2>
-          </ion-label>
-          <ion-input v-model="noPO" readonly class="ion-text-end">
-            <h3 class="ion-text-end"></h3>
-          </ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>Total Nominal:</ion-label>
-          <ion-input v-model="totalNominal" readonly class="ion-text-end">
-            <h3 class="ion-text-end"></h3>
-          </ion-input>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-label>Total Pesanan:</ion-label>
-          <ion-input v-model="totalPesanan" readonly class="ion-text-end">
-            <h3 class="ion-text-end"></h3>
-          </ion-input>
-        </ion-item>
-        </ion-card-content>
+
+        <ion-card>
+          <ion-card-content>
+            <ion-item>
+              <ion-label>
+                <h2>No. PO :</h2>
+              </ion-label>
+              <ion-input v-model="noPO" readonly class="ion-text-end">
+                <h3 class="ion-text-end"></h3>
+              </ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label>Total Nominal:</ion-label>
+              <ion-input v-model="totalNominal" readonly class="ion-text-end">
+                <h3 class="ion-text-end"></h3>
+              </ion-input>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-label>Total Pesanan:</ion-label>
+              <ion-input v-model="totalPesanan" readonly class="ion-text-end">
+                <h3 class="ion-text-end"></h3>
+              </ion-input>
+            </ion-item>
+          </ion-card-content>
         </ion-card>
       </ion-list>
-      
+
       <ion-list>
         <ion-list-header>
           <ion-label color="primary">
@@ -77,7 +77,9 @@
           <ion-grid>
             <ion-row class="header-row">
               <ion-col size="6">PRODUK</ion-col>
-              <ion-col class="ion-text-center ion-text-uppercase" size="3">Jumlah</ion-col>
+              <ion-col class="ion-text-center ion-text-uppercase" size="3"
+                >Jumlah</ion-col
+              >
               <ion-col class="ion-text-center" size="3">SATUAN</ion-col>
               <!-- <ion-col class="ion-text-center" size="2">AKSI</ion-col> -->
             </ion-row>
@@ -86,8 +88,10 @@
       </ion-list>
 
       <ion-list v-if="listBarang.length">
-
-        <ion-item-sliding v-for="(listBarang, index) in listBarang" :key="index">
+        <ion-item-sliding
+          v-for="(listBarang, index) in listBarang"
+          :key="index"
+        >
           <ion-item lines="full" class="(i % 2 == 0) ? 'odd' : 'even'">
             <ion-grid>
               <ion-row>
@@ -100,32 +104,28 @@
                 <ion-col class="ion-text-center" size="3">
                   {{ listBarang.harga }}
                 </ion-col>
-                <!-- <ion-col class="ion-text-center" size="2">
-                  <ion-fab vertical="center" horizontal="center">
-                    <ion-fab-button size="small" color="secondary" @click="deleteBarang(listBarang.namaBarang)">
-                      <ion-icon :icon="trash"></ion-icon>
-                    </ion-fab-button>
-                  </ion-fab>
-                </ion-col> -->
               </ion-row>
             </ion-grid>
           </ion-item>
           <ion-item-options side="end">
-            <ion-item-option color="danger" @click="deleteBarang(listBarang.namaBarang)">Hapus</ion-item-option>
+            <ion-item-option
+              color="danger"
+              @click="deleteBarang(listBarang.namaBarang)"
+              >Hapus</ion-item-option
+            >
           </ion-item-options>
         </ion-item-sliding>
-        
       </ion-list>
       <ion-list v-else>
         <!-- <ion-item lines="full"> -->
-          <ion-grid>
-            <ion-row>
-              <ion-col class="ion-text-center ion-padding" size="12">
-                <p class="isi-tabel">Silahkan Tambah Barang</p>
-                <!-- <ion-textarea readonly rows="5">Silahkan Tambah Barang</ion-textarea> -->
-              </ion-col>
-            </ion-row>
-          </ion-grid>
+        <ion-grid>
+          <ion-row>
+            <ion-col class="ion-text-center ion-padding" size="12">
+              <p class="isi-tabel">Silahkan Tambah Barang</p>
+              <!-- <ion-textarea readonly rows="5">Silahkan Tambah Barang</ion-textarea> -->
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-list>
     </div>
 
@@ -135,13 +135,12 @@
 
     <template v-slot:button-float>
       <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-          <ion-fab-button @click="addBarang">
-            <ion-icon :icon="add"></ion-icon>
-          </ion-fab-button>
-        </ion-fab>
+        <ion-fab-button @click="addBarang">
+          <ion-icon :icon="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </template>
   </base-layout>
-  
 </template>
 
 <script>
@@ -172,17 +171,16 @@ import {
   IonRefresher,
   IonRefresherContent,
   loadingController,
-  alertController
+  alertController,
 } from "@ionic/vue";
 import { save, add, trash } from "ionicons/icons";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "@/config";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import modalBarang from "./ModalBarang.vue";
+import modalBarang from "../order/ModalBarang.vue";
 import moment from "moment";
-import "moment/locale/id" 
-
+import "moment/locale/id";
 
 export default {
   name: "DetailPO",
@@ -227,7 +225,7 @@ export default {
       hari: "",
       tanggal: "",
       waktu: "",
-      tanggalPesan: ""
+      tanggalPesan: "",
     };
   },
   async ionViewDidEnter() {
@@ -239,20 +237,8 @@ export default {
     const router = useRouter();
 
     const closeModal = async () => {
-      const { data } = await modalController.ionWillDismiss()
+      const { data } = await modalController.ionWillDismiss();
       console.log(data);
-      // try {
-      //   await modalController.dismiss({ dataBarang });
-
-      //   if (dataBarang !== null) {
-      //     // dataBarang = modelData.data;
-      //     console.log("Modal Data : " + dataBarang);
-      //   } else {
-      //     console.log(dataBarang + "- kosong");
-      //   }
-      // } catch (err) {
-      //   console.log(err);
-      // }
     };
 
     return {
@@ -260,12 +246,12 @@ export default {
       closeModal,
     };
   },
-  
+
   methods: {
     async getToko() {
       try {
         const loading = await loadingController.create({
-          spinner: 'circles',
+          spinner: "circles",
           message: "Loading...",
           translucent: true,
         });
@@ -288,8 +274,8 @@ export default {
         // console.log("resultnya", dataResult)  ;
         vm.dataToko = dataResult.data[0][0];
         // vm.noPO = Math.floor(Math.random() * 10000000)
-        vm.noPO = moment().format("YYMMDD.ddHHmmss")
-        
+        vm.noPO = moment().format("YYMMDD.ddHHmmss");
+
         if (vm.dataToko) {
           loading.dismiss();
         }
@@ -297,47 +283,37 @@ export default {
         console.log(err, "catchnya jon");
       }
     },
+
     async addBarang() {
       // const dataAkun = await this.getAkun()
       const modal = await modalController.create({
         component: modalBarang,
         componentProps: { dataBarang: this.listBarang },
       });
-      // modal.present();
 
-      // const { data } = await modal.onWillDismiss()
-      // .then(res => {
-      //   console.log(res);
-      // })
-      // .catch(err => {
-      //   console.log(err);
-      // })
-      // console.log(data.dataBarang.namaBarang, ">>>>");
-      // this.listBarang.push(data.dataBarang)
-      // console.log(this.listBarang[0].namaBarang, "^^^");
-      // console.log(this.listBarang[0].jumlahBarang, "****");
-      // return this
-
-      modal.onDidDismiss()
+      modal
+        .onDidDismiss()
         .then((res) => {
           if (res.data == null) {
             console.log("kosong");
           } else {
             // console.log(res.data.dataBarang, ">>>>");
-            const dataRespon = res.data.dataBarang
-            this.listBarang.push(dataRespon)
-            this.totalNominal += dataRespon.harga*Number(dataRespon.jumlahBarang)
-            this.totalPesanan += Number(dataRespon.jumlahBarang)
+            const dataRespon = res.data.dataBarang;
+            this.listBarang.push(dataRespon);
+            this.totalNominal +=
+              dataRespon.harga * Number(dataRespon.jumlahBarang);
+            this.totalPesanan += Number(dataRespon.jumlahBarang);
             // console.log(this.totalNominal, "<<<<");
             console.log(this.listBarang, "<<<<");
           }
         })
         .catch((err) => {
           console.log(err, "diapain ya");
-        })
+        });
 
-        return await modal.present()
+      return await modal.present();
     },
+    
     async savePO() {
       try {
         // const alert = await alertController.create({
@@ -345,41 +321,37 @@ export default {
         //   message: "Apakah data pesanan sudah sesuai?",
         //   buttons: ['Tidak', 'Ya']
         // })
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present()
+        await this.presentLoading();
 
-        let vm = this
-        let isi = []
-        let penampung1 = {}
-        let penampung2 = {}
+        let vm = this;
+        let isi = [];
+        let penampung1 = {};
+        let penampung2 = {};
 
-        penampung1.totalNominal = vm.totalNominal
-        isi.push(penampung1)
+        penampung1.totalNominal = vm.totalNominal;
+        isi.push(penampung1);
         vm.listBarang.forEach((elm) => {
-          penampung2.masterBarangId = elm.masterBarangId
-          penampung2.jumlahBarang = elm.jumlahBarang
-          penampung2.hargaBarang = elm.harga
-          penampung2.totalHarga = elm.totalHarga
-          isi.push(penampung2)
-          penampung2 = {}
-        })
+          penampung2.masterBarangId = elm.masterBarangId;
+          penampung2.jumlahBarang = elm.jumlahBarang;
+          penampung2.hargaBarang = elm.harga;
+          penampung2.totalHarga = elm.totalHarga;
+          isi.push(penampung2);
+          penampung2 = {};
+        });
         // noPO,masterTokoId,jumlahPesanan,tanggalPesan,userId,data
         // data = { jumlahBarang, hargaBarang, totalHarga, masterBarangId }
         const idToko = await Storage.get({ key: "tokoId" });
         const idUser = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
-          ipConfig + "/transaksi/screeningPO", {
+          ipConfig + "/transaksi/screeningPO",
+          {
             noPO: vm.noPO,
             masterTokoId: idToko.value,
             jumlahPesanan: vm.totalPesanan,
             tanggalPesan: vm.tanggalPesan,
             userId: idUser,
-            data: isi
+            data: isi,
           },
           {
             headers: {
@@ -388,55 +360,62 @@ export default {
           }
         );
         console.log(dataResult);
-        // console.log(idToko);
-        // console.log(idUser);
-        // console.log(dataToken);
-        // console.log(isi);
-
-        await loading.dismiss()
-        const alert = await alertController.create({
-          message: "Purchase Order berhasil ditambahkan",
-          buttons: ['Ok']
-        })
-        await alert.present()
-
-        await this.$router.replace("/tabs/order");
+        await vm.discardLoading();
+        await vm.presentAlert();
+        await vm.$router.replace("/tabs/order");
       } catch (err) {
         console.log(err, "katanya 'e' to the 'ror'");
+        await this.discardLoading();
       }
     },
+
     deleteBarang(params) {
-      console.log("kepencet", params);
-      let dataId = this.listBarang.findIndex(el => el.namaBarang == params )
-      let dataBarang = this.listBarang.find(el => el.namaBarang == params )
-      console.log(dataId, dataBarang);
-      this.listBarang.splice(dataId, 1)
-      this.totalNominal -= dataBarang.totalHarga
-      this.totalPesanan -= Number(dataBarang.jumlahBarang)
+      // console.log("kepencet", params);
+      let dataId = this.listBarang.findIndex((el) => el.namaBarang == params);
+      let dataBarang = this.listBarang.find((el) => el.namaBarang == params);
+      // console.log(dataId, dataBarang, "deletenya");
+      this.listBarang.splice(dataId, 1);
+      this.totalNominal -= dataBarang.totalHarga;
+      this.totalPesanan -= Number(dataBarang.jumlahBarang);
     },
-    sendDate(x) {
-      let y = moment(x).format("YYYY-MM-DD")
-      console.log(y);
-      return y
-    },
+
     async testMoment() {
-      this.hari = await moment().format('dddd')
-      this.tanggal = await moment().format('LL')
-      this.waktu = await moment().format('LT')
-      this.tanggalPesan = await moment()
-      // let formatMoment = await moment().format('LLLL')
-      // console.log("moment", this.hari);
-      // console.log("moment", this.tanggal);
-      // console.log("moment", this.waktu);
-      // console.log("moment", this.tanggalPesan);
+      this.hari = await moment().format("dddd");
+      this.tanggal = await moment().format("LL");
+      this.waktu = await moment().format("LT");
+      this.tanggalPesan = await moment();
     },
+
     async doRefresh(ev) {
-    await this.getToko();
-    await this.testMoment();
+      await this.getToko();
+      await this.testMoment();
 
       if (this.dataToko) {
         ev.target.complete();
       }
+    },
+
+    async presentAlert() {
+      const alert = await alertController.create({
+        message: "Purchase Order berhasil ditambahkan",
+        buttons: ["Tutup"],
+      });
+      await alert.present();
+    },
+
+    async presentLoading() {
+      const loading = await loadingController.create({
+        spinner: "circles",
+        message: "Mohon Tunggu...",
+        translucent: true,
+      });
+      await loading.present();
+    },
+
+    async discardLoading() {
+      await setTimeout(() => {
+        loadingController.dismiss();
+      }, 1000);
     },
   },
 };
@@ -472,7 +451,7 @@ export default {
   color: chartreuse;
 }
 
-.isi-tabel{
+.isi-tabel {
   font-style: italic;
 }
 </style>

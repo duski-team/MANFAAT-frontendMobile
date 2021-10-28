@@ -1,5 +1,5 @@
 <template>
-  <base-layout translucent-base="true" page-title="Detail Barang">
+  <base-layout translucent-base="true" page-title="Cari Toko">
     <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
@@ -45,6 +45,7 @@
               v-for="(dataToko, index) in dataToko"
               :key="index"
               @click="detailToko(dataToko.id)"
+              detail
             >
               <ion-label>
                 <h2>{{ dataToko.namaToko }}</h2>
@@ -143,7 +144,7 @@ export default {
             },
           }
         );
-        // console.log("result modal", dataResult.data);
+        console.log("result modal", dataResult.data);
         vm.dataToko = dataResult.data;
         // console.log("barangnya", vm.listBarang);
         await loading.dismiss();

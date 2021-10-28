@@ -1,9 +1,9 @@
 <template>
   <base-layout page-title="MANFA'AT">
     <template v-slot:actions-end>
-      <ion-button @click="signout">
+      <!-- <ion-button @click="signout">
         <ion-icon slot="icon-only" :icon="exit"></ion-icon>
-      </ion-button>
+      </ion-button> -->
     </template>
 
     <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
@@ -39,11 +39,11 @@
         v-model="selectedSegment"
         @ionChange="segmentChanged($event)"
       >
-        <ion-segment-button value="1">Tambah</ion-segment-button>
-        <ion-segment-button value="2">Daftar</ion-segment-button>
+        <ion-segment-button value="1">Buat PO</ion-segment-button>
+        <ion-segment-button value="2">List PO</ion-segment-button>
       </ion-segment>
 
-      <ion-slides>
+      <ion-slides :options="slideOptions">
         <ion-slide v-if="selectedSegment == '1'">
           <ion-grid>
             <ion-row>
@@ -61,6 +61,7 @@
                       :key="index"
                       @click="openDetailPO(item.id)"
                       lines="full"
+                      detail
                     >
                       <!-- <ion-note slot="start">{{ index }}</ion-note> -->
                       <ion-label>
@@ -75,6 +76,7 @@
                       :key="index"
                       @click="openDetailPO(listToko.id)"
                       lines="full"
+                      detail
                     >
                       <ion-note slot="start">{{ index + 1 }}</ion-note>
                       <ion-label>
@@ -99,6 +101,7 @@
                     :key="index"
                     lines="full"
                     @click="openlistPO(listPO.noPO)"
+                    detail
                   >
                     <ion-label>
                       <h2>PO: {{ listPO.noPO }}</h2>
@@ -110,35 +113,24 @@
               </ion-col>
             </ion-row>
           </ion-grid>
+          <!-- <PageListPO :segmentProps="selectedSegment" ></PageListPO> -->
         </ion-slide>
       </ion-slides>
-
-      <!-- </ion-toolbar> -->
-      <!-- <div v-if="listToko"> -->
     </ion-list>
   </base-layout>
 </template>
 
 <script>
-import { ref } from "vue";
+// import { ref } from "vue";
 import {
   loadingController,
-  // IonCard,
-  // IonCardContent,
-  // IonCardTitle,
   IonList,
   IonListHeader,
   IonItem,
   IonLabel,
-  // IonSelect,
-  // IonSelectOption,
-  IonIcon,
-  IonButton,
-  // IonModal,
-  // modalController,
-  // onIonViewWillEnter,
+  // IonIcon,
+  // IonButton,
   IonSearchbar,
-  // IonToolbar,
   IonSegment,
   IonSegmentButton,
   IonGrid,
@@ -151,32 +143,25 @@ import {
   IonNote,
 } from "@ionic/vue";
 import { useRouter } from "vue-router";
-import { exit } from "ionicons/icons";
+// import { exit } from "ionicons/icons";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "../config";
 import axios from "axios";
-import DetailPO from "../components/pages/CreatePO.vue";
-// import ModalPO from "../components/sales/ModalPO.vue";
 import moment from "moment";
 import "moment/locale/id";
+// import DetailPO from "../components/pages/CreatePO.vue";
+// import PageListPO from "../components/pages/order/ListPO.vue";
 
 export default {
   name: "Purchase Order",
   components: {
-    // IonCard,
-    // IonCardContent,
-    // IonCardTitle,
     IonList,
     IonListHeader,
     IonItem,
     IonLabel,
-    // IonSelect,
-    // IonSelectOption,
-    IonIcon,
-    IonButton,
-    // IonModal,
+    // IonIcon,
+    // IonButton,
     IonSearchbar,
-    // IonToolbar,
     IonSegment,
     IonSegmentButton,
     IonGrid,
@@ -187,10 +172,11 @@ export default {
     IonRefresher,
     IonRefresherContent,
     IonNote,
+    // PageListPO,
   },
   data() {
     return {
-      exit,
+      // exit,
       listToko: [],
       listPO: [],
       isItemAvailable: false,
@@ -199,167 +185,154 @@ export default {
       tanggal: "",
       waktu: "",
       tanggalPesan: "",
-      // dateTime: {},
       selectedSegment: "1",
     };
   },
+
   setup() {
     const router = useRouter();
-    const isOpenRef = ref(false);
-    const setOpen = (state) => (isOpenRef.value = state);
-    // const currentDate = new Date();
     const slideOptions = {
       initialSlide: 0,
       speed: 500,
     };
 
-    return { router, isOpenRef, setOpen, DetailPO, slideOptions };
+    return { router, slideOptions };
   },
 
   async ionViewWillEnter() {
-    if (!this.listToko) {
+    if (!this.listToko.length) {
       await this.dataToko();
     }
     if (!this.tanggal && !this.waktu) {
       await this.testMoment();
       await this.clockInterval();
     }
-    // await this.dataPO();
-    // await this.currentDate();
-    // await this.setDateTime();
   },
   watch: {
-    selectedSegment: function(newSegment, oldSegment) {
-      console.log(newSegment, "new");
-      console.log(oldSegment, "old");
+    selectedSegment: function() {
+      // console.log(newSegment, "new");
+      // console.log(oldSegment, "old");
       if (this.selectedSegment == 2) {
-        if (!this.listPO.length) {
-          this.dataPO();
-        }
-        // this.dataToko()
+        this.dataPO();
       }
-      // else {
-      //   this.dataPO()
-      // }
+    },
+    slideOptions: function(newSlide, oldSlide) {
+      console.log(newSlide, "new");
+      console.log(oldSlide, "old");
     },
   },
 
   methods: {
+    // listALL
+    // async dataToko() {
+    //   try {
+    //     const loading = await loadingController.create({
+    //       spinner: "circles",
+    //       message: "Loading...",
+    //       translucent: true,
+    //     });
+    //     await loading.present();
+
+    //     let vm = this;
+    //     const dataToken = await Storage.get({ key: "token" });
+    //     const dataResult = await axios.get(ipConfig + "/masterToko/list", {
+    //       headers: {
+    //         token: dataToken.value,
+    //       },
+    //     });
+    //     let setWilayah = [];
+    //     dataResult.data.forEach((el) => {
+    //       if (el.wilayahId == 2) {
+    //         setWilayah.push(el);
+    //       }
+    //     });
+    //     vm.listToko = setWilayah.sort((a, b) =>
+    //       a.wilayahId > b.wilayahId ? 1 : b.wilayahId > a.wilayahId ? -1 : 0
+    //     );
+
+    //     if (vm.listToko) {
+    //       loading.dismiss();
+    //     }
+    //   } catch (err) {
+    //     console.log(err, "errornya datatoko");
+    //   }
+    // },
     async dataToko() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
-
-        let vm = this;
-        const dataToken = await Storage.get({ key: "token" });
-        // console.log(JSON.stringify(dataToken), "<<<<<");
-        const dataResult = await axios.get(ipConfig + "/masterToko/list", {
-          headers: {
-            token: dataToken.value,
-          },
-        });
-        // console.log("isinya", dataResult.data);
-        let setWilayah = [];
-        dataResult.data.forEach((el) => {
-          // console.log(el);
-          if (el.wilayahId == 2) {
-            // console.log(el);
-            setWilayah.push(el);
-          }
-        });
-        vm.listToko = setWilayah.sort((a, b) =>
-          a.wilayahId > b.wilayahId ? 1 : b.wilayahId > a.wilayahId ? -1 : 0
-        );
-
-        if (vm.listToko) {
-          loading.dismiss();
-        }
-      } catch (err) {
-        console.log(err, "errornya datatoko");
-      }
-    },
-    async dataPO() {
-      try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
+        await this.presentLoading();
 
         let vm = this;
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
-          ipConfig + "/masterPO/listUnaccepted",
+          ipConfig + "/masterToko/listByUserLogin",
           {
             headers: {
               token: dataToken.value,
             },
           }
         );
-        vm.listPO = await dataResult.data.sort((a, b) =>
+        vm.listToko = dataResult.data.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
-        await loading.dismiss();
+
+        if (vm.listToko) {
+          await this.discardLoading();
+        }
       } catch (err) {
-        console.log(err, "errornya dataPO");
+        console.log(err, "errornya datatoko");
+        await this.discardLoading();
       }
     },
-    async signout() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Loading...",
-        translucent: true,
-      });
-      await loading.present();
+    async dataPO() {
+      try {
+        await this.presentLoading();
 
-      let vm = this;
-      await Storage.set({
-        key: "token",
-        value: "",
-      });
-      await Storage.set({
-        key: "idUser",
-        value: null,
-      });
-      await Storage.set({
-        key: "tokoId",
-        value: null,
-      });
-      // console.log("token deleted");
-      vm.$router.replace("/");
-      await loading.dismiss();
+        let vm = this;
+        const dataToken = await Storage.get({ key: "token" });
+        const dataResult = await axios.get(
+          ipConfig + "/masterPO/listByUserLogin",
+          {
+            headers: {
+              token: dataToken.value,
+            },
+          }
+        );
+
+        let hasil = dataResult.data.data;
+        // console.log(hasil);
+        hasil.forEach((el) => {
+          el.tanggalPesan = moment(el.tanggalPesan).format("dddd, L");
+        });
+        vm.listPO = await hasil.sort((a, b) =>
+          a.id > b.id ? 1 : b.id > a.id ? -1 : 0
+        );
+        await this.discardLoading();
+      } catch (err) {
+        console.log(err, "errornya dataPO");
+        await this.discardLoading();
+      }
     },
+
     initializeItems() {
       this.items = this.listToko;
     },
     async openDetailPO(paramsnya) {
-      // console.log(paramsnya);
       await Storage.set({ key: "tokoId", value: paramsnya.toString() });
       await this.$router.push("/tabs/order/details");
-      // await this.initializeItems()
     },
 
     async openlistPO(paramsnya) {
-      // console.log("ini", paramsnya);
       await Storage.set({ key: "noPO", value: paramsnya.toString() });
       await this.$router.push("/detailListPO");
     },
     async searchToko(ev) {
       // reset
       this.initializeItems();
-
       // console.log(ev.detail.value);
       const val = ev.detail.value;
-
       if (val && val.trim() !== "") {
         this.isItemAvailable = true;
         this.items = this.items.filter((item) => {
-          // console.log(item);
           return item.namaToko.toLowerCase().indexOf(val.toLowerCase()) > -1;
         });
       } else {
@@ -368,46 +341,49 @@ export default {
     },
 
     async doRefresh(ev) {
-      // console.log(ev);
-      await this.dataToko();
-      await this.dataPO();
-      await this.testMoment();
       await this.clockInterval();
+      await this.testMoment();
+      await this.dataPO();
+      await this.dataToko();
 
       if (this.listToko) {
         ev.target.complete();
       }
     },
-
     async segmentChanged(ev) {
       // console.log("segment changed", ev.detail.value);
       this.selectedSegment = ev.detail.value;
     },
-
-    // sendDate(x) {
-    //   let y = moment(x).format("YYYY/MM/DD");
-    //   console.log(y);
-    //   return y;
-    // },
-
     async testMoment() {
       this.hari = await moment().format("dddd");
       this.tanggal = await moment().format("LL");
       this.waktu = await moment().format("LT");
-      this.tanggalPesan = await moment().format("YYYY-MM-DD");
+      // this.tanggalPesan = await moment().format("YYYY-MM-DD");
 
-      // let formatMoment = await moment().format('LLLL')
-      // console.log("moment", this.hari);
-      // console.log("moment", this.tanggal);
       console.log("moment", this.waktu);
       // console.log("moment", this.tanggalPesan);
     },
 
-    clockInterval() {
-      setInterval(() => {
+    async clockInterval() {
+      await setInterval(() => {
         this.testMoment();
-        console.log("a");
-      }, 30000);
+        console.log("clockInterval");
+      }, 10000);
+    },
+
+    async presentLoading() {
+      const loading = await loadingController.create({
+        spinner: "circles",
+        message: "Mohon Tunggu...",
+        translucent: true,
+      });
+      await loading.present();
+    },
+
+    async discardLoading() {
+      await setTimeout(() => {
+        loadingController.dismiss();
+      }, 1000);
     },
   },
 };

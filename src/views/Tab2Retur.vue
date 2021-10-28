@@ -32,7 +32,7 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <ion-list v-if="listRetur">
+          <ion-list v-if="!listRetur.length">
             <ion-list-header>
               <ion-label color="primary">
                 <h1>List Retur</h1>
@@ -44,7 +44,6 @@
                 <p>Tidak ada retur</p>
               </ion-label>
             </ion-item>
-            
           </ion-list>
           <ion-list v-else>
             <ion-list-header>
@@ -52,18 +51,18 @@
                 <h1>List Retur</h1>
               </ion-label>
             </ion-list-header>
-            
+
             <ion-item
               v-for="(listRetur, index) in listRetur"
               :key="index"
-              @click="openDetailRetur(listRetur.id)"
+              @click="openDetailRetur(listRetur.noPO)"
               lines="full"
+              detail
             >
               <ion-label>
-                <h2>{{ listRetur.noPO }}</h2>
+                <h2>No. PO: {{ listRetur.noPO }}</h2>
               </ion-label>
             </ion-item>
-
           </ion-list>
         </ion-col>
       </ion-row>
@@ -93,7 +92,7 @@ import { Storage } from "@capacitor/storage";
 import { ipConfig } from "../config";
 import axios from "axios";
 import moment from "moment";
-import "moment/locale/id" 
+import "moment/locale/id";
 
 export default {
   name: "ReturOrder",
@@ -129,89 +128,83 @@ export default {
   },
   async ionViewDidEnter() {
     await this.getRetur();
-    await this.testMoment()
+    await this.testMoment();
   },
   methods: {
     async getRetur() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
+        await this.presentLoading();
 
         let vm = this;
         // this.runDeterminateProgress()
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
-          ipConfig + "/retur/listReturByAccepted/" + 0,
+          ipConfig + "/retur/listByUsersLogin",
           {
             headers: {
               token: dataToken.value,
             },
           }
         );
-        console.log("list retur", dataResult.data);
-        vm.listRetur = dataResult.data.sort((a, b) =>
-          a.id > b.id ? 1 : b.id > a.id ? -1 : 0
-        );
+        // console.log("list retur", dataResult.data);
+
+        if (dataResult.data.length) {
+          vm.listRetur = dataResult.data.sort((a, b) =>
+            a.id > b.id ? 1 : b.id > a.id ? -1 : 0
+          );
+        } else {
+          vm.listRetur = dataResult.data;
+        }
 
         if (vm.listRetur) {
-          await loading.dismiss();
-          // await this.hideProgressBar();
+          await this.discardLoading();
         }
       } catch (err) {
         console.log(err, "errornya listRetur");
+        await this.discardLoading();
       }
     },
-    async doRefresh(ev)  {
+
+    async openDetailRetur(p) {
+      console.log(`detail retur`, p);
+      // console.log(`detail retur ${noPO}`);
+    },
+
+    async doRefresh(ev) {
       // console.log(ev);
-      await this.getRetur()
-      await this.testMoment()
+      await this.getRetur();
+      await this.testMoment();
 
       if (this.listRetur) {
-        ev.target.complete()
+        ev.target.complete();
       }
-
     },
 
     async testMoment() {
-      this.hari = await moment().format('dddd')
-      this.tanggal = await moment().format('LL')
-      this.waktu = await moment().format('LT')
-      // this.tanggalPesan = await moment().format('YYYY-MM-DD')
-      // let formatMoment = await moment().format('LLLL')
-      // console.log("moment", this.hari);
-      // console.log("moment", this.tanggal);
-      // console.log("moment", this.waktu);
-      // console.log("moment", this.tanggalPesan);
+      this.hari = await moment().format("dddd");
+      this.tanggal = await moment().format("LL");
+      this.waktu = await moment().format("LT");
     },
 
-    showProgressBar() {
-      this.showLoader = true;
+    async presentLoading() {
+      const loading = await loadingController.create({
+        spinner: "circles",
+        message: "Mohon Tunggu...",
+        translucent: true,
+      });
+      await loading.present();
     },
-    hideProgressBar() {
-      this.showLoader = false;
+
+    async discardLoading() {
+      await setTimeout(() => {
+        loadingController.dismiss();
+      }, 1000);
     },
-    runDeterminateProgress() {
-      this.showProgressBar()
-      for (let index = 0; index <= 100; index++) {
-        this.setPercentBar(+index);
-      }
-    },
-    setPercentBar(i) {
-      setTimeout(() => {
-        let apc = (i / 100)
-        console.log(apc);
-        this.testValue = apc;
-      }, 30 * i);
-    }
   },
 };
 </script>
 <style scoped>
-.isi-tabel{
+.isi-tabel {
   font-style: italic;
 }
 </style>

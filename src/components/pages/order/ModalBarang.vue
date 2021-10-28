@@ -25,7 +25,6 @@
                 placeholder="pilih barang"
                 interface="action-sheet"
                 v-model="pilihBarang.namaBarang"
-                @ionChange="pilih"
               >
                 <ion-select-option
                   v-for="(listBarang, index) in listBarang"
@@ -46,7 +45,7 @@
                 type="number"
               ></ion-input>
             </ion-item>
-            <ion-item lines="none">
+            <ion-item lines="none" class="ion-no-margin">
               <ion-grid>
                 <ion-row>
                   <ion-col>
@@ -56,17 +55,7 @@
                       @click="simpanBarang(this.pilihBarang)"
                       >Simpan</ion-button
                     >
-                    <!-- <ion-button
-                      expand="block"
-                      class="tombol-simpan"
-                      @click="simpanBarang(this.pilihBarang)"
-                      >Simpan</ion-button
-                    > -->
                   </ion-col>
-                <!-- </ion-row>
-              </ion-grid>
-              <ion-grid>
-                <ion-row> -->
                   <ion-col>
                     <ion-button
                       expand="block"
@@ -158,11 +147,8 @@ export default {
           this.pilihBarang.masterBarangId = el.masterBarangId;
           this.pilihBarang.totalHarga =
             el.harga * Number(this.pilihBarang.jumlahBarang);
-          // this.pilihBarang.totalNominal = el.harga * el.jumlahBarang
         }
       });
-      // console.log(this.pilihBarang, "<<<");
-      // console.log(JSON.stringify(this.pilihBarang, "<<<"));
       modalController.dismiss(
         {
           dataBarang: this.pilihBarang,
@@ -170,15 +156,6 @@ export default {
         },
         { role: "confirm " }
       );
-      // console.log(this.pilihBarang, "simpan");
-    },
-
-    pilih() {
-      // console.log(this.pilihBarang.namaBarang);
-    },
-
-    jumlah() {
-      // console.log(this.pilihBarang.jumlahBarang);
     },
 
     async getAkun() {
@@ -234,7 +211,7 @@ export default {
       await this.getToko();
 
       if (this.listBarang) {
-        ev.target.complete();
+        await ev.target.complete();
       }
     },
   },

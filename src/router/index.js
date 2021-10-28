@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import Tabs from '../views/Tabs.vue'
 import SignUp from '../views/SignUp.vue'
 import SignIn from '../views/SignIn.vue'
-import Dashboard from '../views/Dashboard.vue'
 
 const routes = [
   {
@@ -18,16 +17,16 @@ const routes = [
     component: SignIn
   },
   {
-    path: '/dashboard',
-    component: Dashboard
-  },
-  {
     path: '/tabs/',
     component: Tabs,
     children: [
       {
         path: '',
-        redirect: 'order'
+        redirect: 'dashboard'
+      },
+      {
+        path: 'dashboard',
+        component: () => import('@/views/Dashboard.vue')
       },
       {
         path: 'order',
@@ -35,7 +34,7 @@ const routes = [
       },
       {
         path: 'order/details',
-        component: () => import('@/components/pages/CreatePO.vue')
+        component: () => import('@/components/pages/order/CreatePO.vue')
       },
       
       {
@@ -44,7 +43,7 @@ const routes = [
       },
       {
         path: 'retur/create',
-        component: () => import('@/components/pages/CreateRetur.vue')
+        component: () => import('@/components/pages/retur/CreateRetur.vue')
       },
       
       {
@@ -53,17 +52,17 @@ const routes = [
       },
       {
         path: 'toko/tambah',
-        component: () => import('@/components/pages/TambahToko.vue')
+        component: () => import('@/components/pages/toko/TambahToko.vue')
       },
     ]
   },
   {
     path: '/detailToko',
-    component: () => import('@/components/pages/DetailToko.vue')
+    component: () => import('@/components/pages/toko/DetailToko.vue')
   },
   {
     path: '/detailListPO',
-    component: () => import('@/components/pages/DetailPO.vue')
+    component: () => import('@/components/pages/order/DetailPO.vue')
   },
 ]
 

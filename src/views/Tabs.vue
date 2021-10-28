@@ -3,6 +3,11 @@
     <ion-tabs>
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
+        <ion-tab-button tab="dashboard" href="/tabs/dashboard">
+          <ion-icon :icon="home" />
+          <ion-label>Dashboard</ion-label>
+        </ion-tab-button>
+
         <ion-tab-button tab="order" href="/tabs/order">
           <ion-icon :icon="document" />
           <ion-label>Purchase Order</ion-label>
@@ -24,13 +29,14 @@
 
 <script>
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { document, menu, storefront } from 'ionicons/icons';
+import { home, document, menu, storefront } from 'ionicons/icons';
 
 export default {
   name: 'Tabs',
   components: { IonLabel, IonTabs, IonTabBar, IonTabButton, IonIcon, IonPage, IonRouterOutlet },
   setup() {
     return {
+      home,
       document,
       menu, 
       storefront, 

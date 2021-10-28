@@ -18,10 +18,26 @@
               </ion-item>
               <ion-item>
                 <ion-label position="floating">Kata Sandi</ion-label>
-                <ion-input type="password" required v-model="password">
-                <!-- <ion-icon :icon="eye" slot="end"></ion-icon> -->
-
-                </ion-input>
+                <ion-input
+                  v-if="viewClicked == false"
+                  type="password"
+                  required
+                  v-model="password"
+                ></ion-input>
+                <ion-input
+                  v-else
+                  type="text"
+                  required
+                  v-model="password"
+                ></ion-input>
+              </ion-item>
+              <ion-item lines="none" class="ion-item-end">
+                <ion-label>Lihat Sandi</ion-label>
+                <ion-checkbox
+                  class="ion-no-margin ion-margin-end"
+                  slot="start"
+                  @click="viewPassword($event)"
+                ></ion-checkbox>
               </ion-item>
             </ion-list>
           </form>
@@ -37,8 +53,8 @@
       </ion-row>
       <ion-row>
         <ion-col class="ion-padding">
-          <ion-button class="lowercase" fill="clear" @click="toSignUp"
-            ><span>Buat akun</span></ion-button
+          <ion-button class="lowercase" fill="clear" @click="toSignUp" disabled
+            ><span>Buat Akun</span></ion-button
           >
         </ion-col>
       </ion-row>
@@ -57,12 +73,15 @@ import {
   IonLabel,
   IonInput,
   IonButton,
+  IonCheckbox,
+  loadingController,
+  alertController,
   // IonIcon,
 } from "@ionic/vue";
 import { ipConfig } from "../config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
-// import { eye } from "ionicons/icons";
+import { eye } from "ionicons/icons";
 import axios from "axios";
 
 export default {
@@ -76,51 +95,93 @@ export default {
     IonLabel,
     IonInput,
     IonButton,
+    IonCheckbox,
     // IonIcon
   },
   setup() {
-    const router = useRouter()
+    const router = useRouter();
     const toSignUp = () => {
-      router.replace('/signup')
-    }
-    return { router, toSignUp }
+      router.replace("/signup");
+    };
+    return { router, toSignUp };
   },
   data() {
     return {
       username: "",
       password: "",
-      note: ""
-      // eye,
+      note: "",
+      viewClicked: false,
+      eye,
     };
   },
   methods: {
     async signin() {
       try {
+        await this.presentLoading();
+
         let vm = this;
         let dataSent = await axios.post(ipConfig + "/users/login", {
           username: vm.username,
           password: vm.password,
         });
-        // console.log(JSON.stringify(dataSent));
-        console.log(dataSent.data);
-        if (dataSent.data[0].token) {
+        if (dataSent.data.message) {
+          vm.note = dataSent.data.message;
+          await vm.discardLoading();
+          await vm.presentAlert();
+        } else {
           await Storage.set({
             key: "token",
             value: dataSent.data[0].token,
-          })
+          });
           await Storage.set({
             key: "idUser",
             value: dataSent.data[1].id,
           });
-          vm.$router.push("/tabs/order");
-          this.username = "";
-          this.password = "";
-        } else {
-          vm.note = dataSent.data.message;
-          console.log(vm.note , "<<<");
+          await Storage.set({
+            key: "roleUser",
+            value: dataSent.data[2].role,
+          });
+          vm.$router.push("/tabs/dashboard");
+          vm.username = "";
+          vm.password = "";
+          await vm.discardLoading();
         }
       } catch (err) {
         console.log("errorHandler", err);
+        this.note = "Gangguan Jaringan";
+        await this.discardLoading();
+        await this.presentAlert();
+      }
+    },
+
+    async presentAlert() {
+      const alert = await alertController.create({
+        message: this.note,
+        buttons: ["Tutup"],
+      });
+      await alert.present();
+    },
+
+    async presentLoading() {
+      const loading = await loadingController.create({
+        spinner: "circles",
+        message: "Mohon Tunggu...",
+        translucent: true,
+      });
+      await loading.present();
+    },
+
+    async discardLoading() {
+      await setTimeout(() => {
+        loadingController.dismiss();
+      }, 1000);
+    },
+
+    async viewPassword(p) {
+      if (p.target.checked == false) {
+        this.viewClicked = true;
+      } else {
+        this.viewClicked = false;
       }
     },
   },
@@ -135,5 +196,9 @@ export default {
 }
 .lowercase {
   text-transform: none;
+}
+
+ion-checkbox {
+  --border-color: primary;
 }
 </style>

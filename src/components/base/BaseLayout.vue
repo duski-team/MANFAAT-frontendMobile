@@ -13,24 +13,12 @@
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
+    <ion-content :fullscreen="screenContent">
       <slot />
     </ion-content>
-      <ion-buttons>
-      <!-- <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button>
-          <ion-icon> -->
-            <slot name="button-float">
-              <!-- <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-                <ion-fab-button> -->
-                  <!-- <ion-icon :icon="iconslot"></ion-icon> -->
-                <!-- </ion-fab-button>
-              </ion-fab> -->
-            </slot> 
-          <!-- </ion-icon>
-        </ion-fab-button>
-      </ion-fab> -->
-      </ion-buttons>
+    <ion-buttons>
+      <slot name="button-float"></slot>
+    </ion-buttons>
   </ion-page>
 </template>
 
@@ -49,7 +37,7 @@ import {
 } from "@ionic/vue";
 
 export default {
-  props: ["translucentBase", "pageTitle", "pageDefaultBackLink"],
+  props: ["translucentBase", "pageTitle", "pageDefaultBackLink", "screenContent"],
   components: {
     IonPage,
     IonHeader,

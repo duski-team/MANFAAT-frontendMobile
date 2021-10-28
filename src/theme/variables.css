@@ -4,8 +4,9 @@ http://ionicframework.com/docs/theming/ */
 /** Ionic CSS Variables **/
 :root {
   /* --ion-color-primary: #419c91; ffff00 */
-  --ion-color-primary: rgb(255, 187, 0);
-  --ion-color-primary-rgb: 65, 156, 145;
+  /* rgb(255, 187, 0) */
+  --ion-color-primary: #ffbb00;
+  --ion-color-primary-rgb: 255, 187, 0;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: #398980;
@@ -62,7 +63,7 @@ http://ionicframework.com/docs/theming/ */
 
   --ion-color-light: #f4f5f8;
   --ion-color-light-rgb: 244, 245, 248;
-  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast: #a7a7a7;
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
@@ -86,6 +87,7 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-step-850: #d9d9d9;
   --ion-color-step-900: #e6e6e6;
   --ion-color-step-950: #f2f2f2;
+
   /* incase its not working on IOS u can set here*/
   --ion-toolbar-color: var(--ion-color-secondary-contrast);
   --ion-toolbar-background: var(--ion-color-primary);
