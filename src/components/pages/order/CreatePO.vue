@@ -170,7 +170,6 @@ import {
   IonItemOption,
   IonRefresher,
   IonRefresherContent,
-  loadingController,
   alertController,
 } from "@ionic/vue";
 import { save, add, trash } from "ionicons/icons";
@@ -181,6 +180,7 @@ import axios from "axios";
 import modalBarang from "../order/ModalBarang.vue";
 import moment from "moment";
 import "moment/locale/id";
+import mixinFunct from "../../../mixins/mixinFunct";
 
 export default {
   name: "DetailPO",
@@ -210,6 +210,9 @@ export default {
     IonRefresher,
     IonRefresherContent,
   },
+
+  mixins: [mixinFunct],
+
   data() {
     return {
       save,
@@ -250,15 +253,8 @@ export default {
   methods: {
     async getToko() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-
-        await loading.present();
-
         let vm = this;
+        await vm.presentLoading();
         const idToko = await Storage.get({ key: "tokoId" });
         const dataToken = await Storage.get({ key: "token" });
         // console.log(JSON.stringify(idToko), "<<<<<");
@@ -277,10 +273,11 @@ export default {
         vm.noPO = moment().format("YYMMDD.ddHHmmss");
 
         if (vm.dataToko) {
-          loading.dismiss();
+          await vm.discardLoading();
         }
       } catch (err) {
         console.log(err, "catchnya jon");
+        await this.discardLoading();
       }
     },
 
@@ -313,7 +310,7 @@ export default {
 
       return await modal.present();
     },
-    
+
     async savePO() {
       try {
         // const alert = await alertController.create({
@@ -321,9 +318,9 @@ export default {
         //   message: "Apakah data pesanan sudah sesuai?",
         //   buttons: ['Tidak', 'Ya']
         // })
-        await this.presentLoading();
-
         let vm = this;
+        await vm.presentLoading();
+
         let isi = [];
         let penampung1 = {};
         let penampung2 = {};
@@ -401,21 +398,6 @@ export default {
         buttons: ["Tutup"],
       });
       await alert.present();
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
   },
 };

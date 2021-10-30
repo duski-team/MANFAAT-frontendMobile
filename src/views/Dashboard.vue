@@ -56,18 +56,18 @@
                       </ion-card-title>
                     </ion-card-header>
 
-                    <ion-card-content>
+                    <ion-card-content class="ion-no-padding ion-no-margin">
                       <ion-item lines="none">
                         <ion-grid>
                           <ion-row>
                             <ion-col>
                               <ion-label>
-                                <h1>Penjualan</h1>
+                                <h1>Toko</h1>
                               </ion-label>
                             </ion-col>
                             <ion-col>
                               <ion-label class="ion-text-end" readonly>
-                                <h3>100 barang</h3>
+                                <h3>{{ tokoSales.length }} - Toko Terdaftar</h3>
                               </ion-label>
                             </ion-col>
                           </ion-row>
@@ -79,17 +79,14 @@
                           <ion-row>
                             <ion-col>
                               <ion-label>
-                                <h1>Sales</h1>
+                                <h1>Penjualan</h1>
                               </ion-label>
                             </ion-col>
                             <ion-col class="ion-text-end">
                               <ion-label>
+                                <h3>{{ orderSales.jumlahPO }} - PO Terbuat</h3>
                                 <h3>
-                                  {{ performanceSales.jumlahPO }} - PO Terbuat
-                                </h3>
-                                <h3>3 Toko Baru</h3>
-                                <h3>
-                                  Rp.{{ performanceSales.totalHargaPO }} - Total
+                                  Rp.{{ orderSales.totalHargaPO }} - Total
                                   Nominal
                                 </h3>
                               </ion-label>
@@ -103,13 +100,60 @@
                           <ion-row>
                             <ion-col>
                               <ion-label>
+                                <h1>Retur</h1>
+                              </ion-label>
+                            </ion-col>
+                            <ion-col class="ion-text-end">
+                              <ion-label>
+                                <h3>
+                                  {{
+                                    returSales.totalRetur
+                                      ? returSales.totalRetur
+                                      : "0"
+                                  }}
+                                  - Retur Terbuat
+                                </h3>
+                              </ion-label>
+                            </ion-col>
+                          </ion-row>
+                        </ion-grid>
+                      </ion-item>
+
+                      <ion-item lines="none">
+                        <ion-grid>
+                          <ion-row>
+                            <ion-col size="4">
+                              <ion-label>
                                 <h1>Barang</h1>
                               </ion-label>
                             </ion-col>
+                            <ion-col size="8">
+                              <ion-item lines="none" class="ion-text-end">
+                                <ion-label>
+                                  <h2>
+                                    {{ jumlahTotalBarang }} - Total Barang
+                                  </h2>
+                                </ion-label>
+                              </ion-item>
+                            </ion-col>
+                          </ion-row>
+                          <ion-row>
                             <ion-col>
-                              <ion-label class="ion-text-end" readonly>
-                                <h3>5 barang / toko</h3>
-                              </ion-label>
+                              <ion-item
+                                v-for="(barangSales, index) in barangSales"
+                                :key="index"
+                                lines="none"
+                              >
+                                <!-- <ion-label class="ion-text-start">
+                                  <h3>{{ barangSales.namaBarang }}</h3>
+                                </ion-label> -->
+                                <ion-label class="ion-text-end">
+                                  <h3>
+                                    {{ barangSales.namaBarang }} -
+                                    {{ barangSales.totalBarang }}
+                                  </h3>
+                                </ion-label>
+                              </ion-item>
                             </ion-col>
                           </ion-row>
                         </ion-grid>
@@ -157,7 +201,6 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  loadingController,
 } from "@ionic/vue";
 import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
@@ -167,6 +210,7 @@ import { ipConfig } from "../config";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
+import mixinFunct from "../mixins/mixinFunct";
 
 export default defineComponent({
   components: {
@@ -187,6 +231,8 @@ export default defineComponent({
     IonCardTitle,
     IonCardContent,
   },
+  mixins: [mixinFunct],
+
   data() {
     return {
       exit,
@@ -198,7 +244,12 @@ export default defineComponent({
       profileSales: "",
       wilayahSales: "",
       watchInterval: "",
-      performanceSales: null,
+      performanceSales: false,
+      orderSales: [],
+      barangSales: [],
+      jumlahTotalBarang: 0,
+      tokoSales: [],
+      returSales: [],
     };
   },
   setup() {
@@ -247,7 +298,7 @@ export default defineComponent({
         await vm.presentLoading();
         const dataUserId = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(
+        const reqOne = await axios.get(
           ipConfig + "/masterPO/jumlahBySales/" + dataUserId.value,
           {
             headers: {
@@ -255,9 +306,49 @@ export default defineComponent({
             },
           }
         );
+        const reqTwo = axios.get(
+          ipConfig + "/masterPO/totalJualBySales/" + dataUserId.value,
+          {
+            headers: {
+              token: dataToken.value,
+            },
+          }
+        );
+        const reqThree = axios.get(
+          ipConfig + "/masterToko/listTokoBaruBySalesLogin/",
+          {
+            headers: {
+              token: dataToken.value,
+            },
+          }
+        );
+        const reqFour = axios.get(
+          ipConfig + "/retur/totalReturBySales/" + dataUserId.value,
+          {
+            headers: {
+              token: dataToken.value,
+            },
+          }
+        );
 
-        console.log(dataResult, "performance");
-        vm.performanceSales = dataResult.data;
+        const dataResult = await axios.all([reqOne, reqTwo, reqThree, reqFour]);
+        // console.log(dataResult, "hasil request");
+        vm.orderSales = dataResult[0].data;
+        // console.log(this.orderSales, "hasil order");
+
+        vm.barangSales = dataResult[1].data.data;
+        vm.barangSales.forEach((el) => {
+          vm.jumlahTotalBarang += Number(el.totalBarang);
+        });
+        // console.log(this.barangSales, "hasil barang");
+
+        vm.tokoSales = dataResult[2].data.data;
+        // console.log(this.tokoSales, "hasil toko");
+
+        vm.returSales = dataResult[3].data.data[0];
+        // console.log(this.returSales.totalRetur, "hasil retur");
+
+        vm.performanceSales = true;
         await this.discardLoading();
       } catch (err) {
         console.log(err, "errornya performance");
@@ -285,25 +376,11 @@ export default defineComponent({
 
     async doRefresh(ev) {
       await this.getProfile();
+      await this.getPerformance();
       await this.runMoment();
       await this.clockInterval();
       await setInterval(() => {
         ev.target.complete();
-      }, 1000);
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
       }, 1000);
     },
 

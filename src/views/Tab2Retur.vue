@@ -32,7 +32,7 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <ion-list v-if="!listRetur.length">
+          <ion-list v-if="listRetur.length == 0">
             <ion-list-header>
               <ion-label color="primary">
                 <h1>List Retur</h1>
@@ -84,7 +84,6 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonProgressBar,
-  loadingController,
 } from "@ionic/vue";
 import { add } from "ionicons/icons";
 import { useRouter } from "vue-router";
@@ -93,6 +92,7 @@ import { ipConfig } from "../config";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
+import mixinFunct from "../mixins/mixinFunct";
 
 export default {
   name: "ReturOrder",
@@ -110,6 +110,8 @@ export default {
     IonRefresherContent,
     IonProgressBar,
   },
+  mixins: [mixinFunct],
+
   data() {
     return {
       add,
@@ -146,16 +148,16 @@ export default {
             },
           }
         );
-        // console.log("list retur", dataResult.data);
+        // console.log("list retur", dataResult.data.data);
 
         if (dataResult.data.length) {
-          vm.listRetur = dataResult.data.sort((a, b) =>
+          vm.listRetur = dataResult.data.data.sort((a, b) =>
             a.id > b.id ? 1 : b.id > a.id ? -1 : 0
           );
         } else {
-          vm.listRetur = dataResult.data;
+          vm.listRetur = dataResult.data.data;
         }
-
+        // console.log(vm.listRetur);
         if (vm.listRetur) {
           await this.discardLoading();
         }
@@ -184,21 +186,6 @@ export default {
       this.hari = await moment().format("dddd");
       this.tanggal = await moment().format("LL");
       this.waktu = await moment().format("LT");
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
   },
 };

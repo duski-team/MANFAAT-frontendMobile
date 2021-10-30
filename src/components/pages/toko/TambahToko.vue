@@ -1,7 +1,10 @@
 <template>
   <base-layout page-title="Tambah Toko" page-default-back-link="/tabs/toko">
     <template v-slot:actions-end>
-      <ion-button v-if="pilihWilayah.namaWilayah && namaToko && alamatToko" @click="saveToko">
+      <ion-button
+        v-if="pilihWilayah.namaWilayah && namaToko && alamatToko"
+        @click="saveToko"
+      >
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
       </ion-button>
       <ion-button v-else disabled>
@@ -96,7 +99,6 @@ import {
   IonSelectOption,
   IonRefresher,
   IonRefresherContent,
-  loadingController,
   toastController,
 } from "@ionic/vue";
 import { defineComponent } from "vue";
@@ -105,6 +107,7 @@ import { ipConfig } from "@/config";
 import { useRouter } from "vue-router";
 import { save } from "ionicons/icons";
 import axios from "axios";
+import mixinFunct from "../../../mixins/mixinFunct";
 
 export default defineComponent({
   components: {
@@ -122,6 +125,9 @@ export default defineComponent({
     IonRefresher,
     IonRefresherContent,
   },
+
+  mixins: [mixinFunct],
+
   data() {
     return {
       save,
@@ -133,23 +139,22 @@ export default defineComponent({
       noKTPToko: "",
     };
   },
+
   setup() {
     const router = { useRouter };
     return { router };
   },
+
   async ionViewWillEnter() {
     await this.getWilayah();
   },
+
   methods: {
     async getWilayah() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Mohon Tunggu...",
-          translucent: true,
-        });
-        await loading.present();
         let vm = this;
+        await vm.presentLoading();
+
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(ipConfig + "/wilayah/list", {
           headers: {
@@ -160,9 +165,10 @@ export default defineComponent({
         vm.listWilayah = dataResult.data.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
-        await loading.dismiss();
+        await vm.discardLoading();
       } catch (err) {
         console.log(err);
+        await this.discardLoading();
       }
     },
     pilih() {
@@ -170,14 +176,9 @@ export default defineComponent({
     },
     async saveToko() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
-
         let vm = this;
+        await vm.presentLoading();
+
         vm.listWilayah.forEach((el) => {
           if (vm.pilihWilayah.namaWilayah == el.namaWilayah) {
             vm.pilihWilayah.id = el.id;
@@ -201,26 +202,25 @@ export default defineComponent({
         );
         console.log(dataResult.data);
 
-        await loading.dismiss()
-        let responseData = dataResult.data
+        await vm.discardLoading();
+        let responseData = dataResult.data;
         const toast = await toastController.create({
           message: "Toko berhasil ditambahkan",
           durations: 3500,
-          position: "top"
-        })
+          position: "top",
+        });
         if (responseData.message == "sukses") {
-          await loading.dismiss()
-          await toast.present()
+          await vm.discardLoading();
+          await toast.present();
           await this.$router.push("/tabs/toko");
-        }
-        else {
-          await loading.dismiss()
-          toast.message = await responseData.message
-          toast.durations = 5000
-          await toast.present()
+        } else {
+          await vm.discardLoading();
+          toast.message = await responseData.message;
+          toast.durations = 5000;
+          await toast.present();
           // await this.$router.push("/tabs/toko");
         }
-        await toast.dismiss()
+        await toast.dismiss();
       } catch (err) {
         console.log(err);
       }

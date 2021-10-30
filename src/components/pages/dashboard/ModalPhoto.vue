@@ -49,12 +49,16 @@ import {
   IonLabel,
   IonButton,
   modalController,
+  alertController,
 } from "@ionic/vue";
 import { useRouter } from "vue-router";
 import { defineComponent } from "vue";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "@/config";
+import Mixins from "@/mixins/mixinFunct";
 import axios from "axios";
+import moment from "moment";
+import "moment/locale/id";
 
 export default defineComponent({
   components: {
@@ -69,45 +73,70 @@ export default defineComponent({
   },
 
   props: ["previewPhoto", "sendPhoto"],
+  mixins: [Mixins],
 
-  created() {
-    console.log("ini photo", this.previewPhoto.src);
-    // console.log("ini kirim", JSON.stringify(this.sendPhoto));
+  data() {
+    return {
+      note: "",
+    };
   },
 
   setup() {
+    // 2021-10-29T00:00:00+00:00
+    const tanggal = moment().format("YYYY-MM-DD") + "T00:00:00+00:00";
     const router = useRouter();
-    return { router };
+    return { tanggal, router };
   },
 
   methods: {
     async kirimAbsen() {
-      console.log("kirim");
-      let vm = this;
-      const idToko = await Storage.get({ key: "tokoId" });
-      const dataToken = await Storage.get({ key: "token" });
-      const formData = new FormData();
-    //   console.log("ini sendPhoto",JSON.stringify(vm.sendPhoto));
-      formData.append("foto1", vm.sendPhoto);
-      formData.append("tanggalAbsensi", vm.tanggal);
-      formData.append("masterTokoId", idToko.value);
+      try {
+        let vm = this;
+        await this.presentLoading();
+        const idToko = await Storage.get({ key: "tokoId" });
+        const dataToken = await Storage.get({ key: "token" });
+        const formData = new FormData();
 
-      const dataResult = await axios.post(
-        ipConfig + "/absensiSales/register",
-        formData,
-        {
-          headers: {
-            token: dataToken.value,
-            "Content-Type": "multipart/form-data"
-          },
+        formData.append("file1", vm.sendPhoto);
+        formData.append("tanggalAbsensi", vm.tanggal);
+        formData.append("masterTokoId", idToko.value);
+
+        const dataResult = await axios.post(
+          ipConfig + "/absensiSales/register",
+          formData,
+          {
+            headers: {
+              token: dataToken.value,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        // console.log(JSON.stringify(dataResult.data, "<<<<"));
+        // vm.note = dataResult.data.message
+        if (dataResult.data) {
+          //   await vm.presentAlert();
+          await vm.discardLoading();
+          await modalController.dismiss();
         }
-      );
-      console.log(dataResult);
+      } catch (err) {
+        console.log(err);
+        // await this.presentAlert();
+        await this.discardLoading();
+        await modalController.dismiss();
+      }
     },
 
     async batalAbsen() {
       await modalController.dismiss();
       console.log("batal");
+    },
+
+    async presentAlert() {
+      const alert = await alertController.create({
+        message: this.note,
+        buttons: ["Tutup"],
+      });
+      await alert.present();
     },
   },
 });

@@ -8,7 +8,7 @@
       slot="fixed"
       pull-factor="0.5"
       pull-min="100"
-      pull-max="200"
+      pull-max="300"
       @ionRefresh="doRefresh($event)"
     >
       <ion-refresher-content
@@ -21,6 +21,16 @@
       <ion-row>
         <ion-col class="ion-padding">
           <ion-list>
+            <ion-item v-if="fotoToko" lines="none">
+              <ion-thumbnail>
+                <ion-img :src="fotoToko"></ion-img>
+              </ion-thumbnail>
+            </ion-item>
+            <ion-item v-else lines="none">
+              <ion-thumbnail>
+                <ion-icon size="large" :icon="person"></ion-icon>
+              </ion-thumbnail>
+            </ion-item>
             <ion-item>
               <ion-label class="ion-text-start" position="stacked">
                 Nama Toko
@@ -91,25 +101,27 @@ import {
   IonLabel,
   IonItem,
   IonInput,
+  IonImg,
   IonButton,
   IonRefresher,
   IonRefresherContent,
   IonFab,
   IonFabButton,
   IonIcon,
-  loadingController,
+  IonThumbnail,
   alertController,
   modalController,
 } from "@ionic/vue";
 import { ipConfig } from "@/config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
-import { chevronDownCircleOutline, camera } from "ionicons/icons";
-import { Camera, CameraResultType } from "@capacitor/camera";
+import { chevronDownCircleOutline, camera, person } from "ionicons/icons";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import modalFoto from "@/components/pages/dashboard/ModalPhoto.vue";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
+import mixinFunct from "../../../mixins/mixinFunct";
 
 export default {
   components: {
@@ -120,28 +132,33 @@ export default {
     IonLabel,
     IonItem,
     IonInput,
+    IonImg,
     IonButton,
     IonRefresher,
     IonRefresherContent,
     IonFab,
     IonFabButton,
     IonIcon,
+    IonThumbnail,
   },
+  mixins: [mixinFunct],
   data() {
     return {
       dataToko: [],
       namaToko: "",
+      fotoToko: "",
       alamatToko: "",
       noHpToko: "",
       noKTPToko: "",
       wilayahId: "",
       previewPhoto: "",
       sendPhoto: "",
+      note: "",
     };
   },
   setup() {
     const router = useRouter();
-    return { router, chevronDownCircleOutline, camera };
+    return { router, chevronDownCircleOutline, camera, person };
   },
   async ionViewDidEnter() {
     await this.getToko();
@@ -168,6 +185,8 @@ export default {
         vm.noHpToko = dataResult.data[0][0].noHpToko;
         vm.noKTPToko = dataResult.data[0][0].noKTPToko;
         vm.wilayahId = dataResult.data[0][0].wilayahId;
+        vm.fotoToko = dataResult.data[0][0].fotoToko;
+        vm.dataToko = dataResult.data;
         // console.log(vm.dataToko, "<<<");
         await vm.discardLoading();
       } catch (err) {
@@ -199,7 +218,11 @@ export default {
             },
           }
         );
-        console.log(dataResult);
+        if (dataResult.data) {
+          this.note = "Berhasil di update";
+        }
+        vm.note = dataResult.data;
+        console.log(vm.note);
 
         await vm.discardLoading();
         await vm.presentAlert();
@@ -214,29 +237,21 @@ export default {
       let vm = this;
       const cameraPhoto = await Camera.getPhoto({
         resultType: CameraResultType.Uri,
-        source: false,
+        source: CameraSource.Camera,
         quality: 30,
         saveToGallery: true,
         allowEditing: false,
       });
-      // let x = await fetch(`${cameraPhoto.webPath}`).then((e) => {
-      //   return e.blob();
-      // });
-
-      let x = await fetch(`${cameraPhoto.webPath}`)
-      .then(y => y.blob())
-      // .then(z => console.log(z))
-      console.log(x, "aaaaaaaaaaaaaaa");
+      let x = await fetch(`${cameraPhoto.webPath}`).then((y) => y.blob());
 
       vm.previewPhoto = cameraPhoto.webPath;
-      vm.sendPhoto = x
-      // console.log(JSON.stringify(vm.sendPhoto));
-      // vm[nama] = cameraPhoto.webPath;
-      // vm["a" + nama] = x;
-
+      vm.sendPhoto = x;
       const modal = await modalController.create({
         component: modalFoto,
-        componentProps: { previewPhoto: vm.previewPhoto, sendPhoto: vm.sendPhoto },
+        componentProps: {
+          previewPhoto: vm.previewPhoto,
+          sendPhoto: vm.sendPhoto,
+        },
       });
       await modal.present();
     },
@@ -246,13 +261,8 @@ export default {
     },
 
     async runMoment() {
-      this.hari = await new Date();
       this.tanggal = await moment().format("YYYY-MM-DD");
       this.waktu = await moment().format("LT");
-
-      console.log("new Date", this.hari);
-      console.log("tanggal", this.tanggal);
-      console.log("waktu", this.waktu);
     },
 
     async doRefresh(ev) {
@@ -266,25 +276,10 @@ export default {
 
     async presentAlert() {
       const alert = await alertController.create({
-        message: "Data Toko Berhasil Diupdate",
+        message: this.note,
         buttons: ["Ok"],
       });
       await alert.present();
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
   },
 };

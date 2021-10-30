@@ -53,7 +53,6 @@
                 <p>{{ dataToko.namaWilayah }}</p>
               </ion-label>
             </ion-item>
-
           </ion-list>
         </ion-col>
       </ion-row>
@@ -77,12 +76,12 @@ import {
   modalController,
   IonRefresher,
   IonRefresherContent,
-  loadingController,
 } from "@ionic/vue";
 // import { close } from "ionicons/icons";
 import { ipConfig } from "@/config";
 import { Storage } from "@capacitor/storage";
 import axios from "axios";
+import mixinFunct from "../../../mixins/mixinFunct";
 
 export default {
   name: "ModalBarang",
@@ -101,6 +100,7 @@ export default {
     IonRefresher,
     IonRefresherContent,
   },
+  mixins: [mixinFunct],
   data() {
     return {
       // close,
@@ -117,21 +117,11 @@ export default {
     };
     return { closeModal };
   },
-  // async mounted() {
-  //   // await this.getAkun();
-  //   // await this.getToko();
-  // },
   methods: {
     async cariToko() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
-
         let vm = this;
+        await vm.presentLoading();
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
           ipConfig + "/masterToko/listByName",
@@ -147,10 +137,10 @@ export default {
         console.log("result modal", dataResult.data);
         vm.dataToko = dataResult.data;
         // console.log("barangnya", vm.listBarang);
-        await loading.dismiss();
+        await vm.discardLoading();
       } catch (err) {
         console.log(err, "catchnya jon");
-        await loadingController.dismiss();
+        await this.discardLoading();
       }
     },
     async doRefresh(ev) {
@@ -163,16 +153,11 @@ export default {
       // }
     },
     async detailToko(p) {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Loading...",
-        translucent: true,
-      });
-      await loading.present();
-      await Storage.set({ key: "tokoId", value: p.toString() })
+      await this.presentLoading();
+      await Storage.set({ key: "tokoId", value: p.toString() });
       await this.$router.push("/detailToko");
       await modalController.dismiss();
-      await loading.dismiss();
+      await this.discardLoading();
     },
   },
 };

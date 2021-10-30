@@ -8,7 +8,10 @@
     </template>
 
     <!-- <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
-      <ion-refresher-content></ion-refresher-content>
+      <ion-refresher-content
+        :pulling-icon="chevronDownCircleOutline"
+        refreshing-spinner="null"
+      ></ion-refresher-content>
     </ion-refresher> -->
 
     <ion-grid>
@@ -57,19 +60,17 @@
               </ion-label>
             </ion-list-header>
             <ion-item>
-              <ion-label>Toko</ion-label>
-              <ion-input
+              <ion-label>Toko: {{ namaToko }}</ion-label>
+              <ion-label class="ion-text-end"
+                >Jumlah Pesanan: {{ jumlahPesanan }}</ion-label
+              >
+              <!-- <ion-input
                 class="ion-text-end"
                 readonly
                 v-model="namaToko"
-              ></ion-input>
+              ></ion-input> -->
             </ion-item>
-            <ion-item>
-              <ion-label>Jumlah Pesanan</ion-label>
-              <ion-input class="ion-text-end" readonly v-model="jumlahPesanan">
-                <!-- <h4 class="ion-text-right"></h4> -->
-              </ion-input>
-            </ion-item>
+
             <ion-item lines="none">
               <ion-label>Driver</ion-label>
               <ion-input class="ion-text-end" v-model="namaDriver"></ion-input>
@@ -92,31 +93,101 @@
                     <h4>Jumlah Barang - {{ dataPO.jumlahBarang }}</h4>
                     <h4>Harga Rp.{{ dataPO.hargaBarang }},00</h4>
                   </ion-label>
-                  <ion-input
-                    v-model="jumlahBarangRetur"
+                  <!-- <ion-input
                     slot="end"
                     @click="addBarangRetur(dataPO)"
                     ><span>Retur</span></ion-input
-                  >
+                  > -->
                   <ion-checkbox
                     slot="end"
-                    @click="isChecked($event)"
-                    @ionChange="pilihBarang(dataPO)"
+                    @click="isChecked($event, dataPO)"
                   ></ion-checkbox>
                 </ion-item>
               </ion-card-content>
             </ion-card>
 
             <ion-item lines="none">
-              <ion-label>Jumlah Retur</ion-label>
-              <ion-input class="ion-text-end" v-model="jumlahRetur"></ion-input>
-            </ion-item>
-            <ion-item lines="none">
-              <ion-label>Jumlah Harga Retur</ion-label>
-              <ion-input class="ion-text-end" v-model="jumlahHargaRetur"
-                ><span>Rp. </span></ion-input
+              <ion-label>Retur: {{ jumlahRetur }}</ion-label>
+              <ion-label class="ion-text-end"
+                >Total: Rp{{ jumlahHargaRetur }},00</ion-label
               >
+              <!-- <ion-input class="ion-text-end" v-model="jumlahRetur"></ion-input> -->
             </ion-item>
+            <!-- <ion-item lines="none">
+              <ion-label>Jumlah Harga Retur</ion-label>
+              <ion-input
+                class="ion-text-end"
+                v-model="jumlahHargaRetur"
+              ></ion-input>
+            </ion-item> -->
+
+            <ion-card v-if="subRetur.length" class="ion-no-padding">
+              <ion-card-header class="ion-no-padding">
+                <ion-item lines="full">
+                  <h5>List Retur</h5>
+                </ion-item>
+              </ion-card-header>
+              <ion-card-content class="ion-no-padding">
+                <ion-list
+                  v-for="(subRetur, index) in subRetur"
+                  :key="index"
+                  lines="none"
+                  class="ion-no-padding ion-no-margin"
+                >
+                  <ion-item lines="full">
+                    <ion-grid>
+                      <ion-row>
+                        <ion-col>
+                          <ion-item>
+                            <ion-label>
+                              <h3>{{ subRetur.namaBarang }}</h3>
+                            </ion-label>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col>
+                          <ion-item>
+                            <ion-label class="ion-text-start">
+                              <h4>Jumlah Barang</h4>
+                            </ion-label>
+                            <ion-select
+                              class="ion-text-end"
+                              v-model="subRetur.jumlahBarangRetur"
+                              @ionChange="testHargaRetur(subRetur)"
+                              interface="action-sheet"
+                            >
+                              <ion-select-option
+                                v-for="(n, i) in subRetur.jumlahBarang + 1"
+                                :key="i"
+                                :value="i"
+                              >
+                                {{ i }}
+                              </ion-select-option>
+                            </ion-select>
+                          </ion-item>
+                          <!-- <ion-item>
+                            <ion-label class="ion-text-start">
+                              <h4>Harga Barang</h4>
+                            </ion-label>
+                            <ion-input
+                              class="ion-text-end"
+                              v-model="subRetur.hargaRetur"
+                            ></ion-input>
+                          </ion-item> -->
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
+                  </ion-item>
+                </ion-list>
+              </ion-card-content>
+            </ion-card>
+
+            <ion-card v-else class="ion-no-padding">
+              <ion-card-header class="ion-no-padding">
+                <ion-item lines="none">
+                  <h5>List Retur</h5>
+                </ion-item>
+              </ion-card-header>
+            </ion-card>
           </ion-list>
         </ion-col>
       </ion-row>
@@ -136,24 +207,24 @@ import {
   IonButton,
   IonIcon,
   IonInput,
-  loadingController,
   IonCard,
   IonCardHeader,
   IonCardContent,
   IonCheckbox,
-  modalController,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/vue";
-import { save } from "ionicons/icons";
+import { save, chevronDownCircleOutline } from "ionicons/icons";
 import { useRouter } from "vue-router";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "@/config";
+import { defineComponent } from "vue";
 import axios from "axios";
-import modalRetur from "../retur/ModalRetur.vue";
 import moment from "moment";
 import "moment/locale/id";
-import { defineComponent } from "vue";
+import mixinFunct from "../../../mixins/mixinFunct";
 
-export default defineComponent ({
+export default defineComponent({
   components: {
     IonGrid,
     IonRow,
@@ -169,7 +240,12 @@ export default defineComponent ({
     IonCardHeader,
     IonCardContent,
     IonCheckbox,
+    IonSelect,
+    IonSelectOption,
   },
+
+  mixins: [mixinFunct],
+
   setup() {
     const router = useRouter();
     return { router };
@@ -178,6 +254,7 @@ export default defineComponent ({
   data() {
     return {
       save,
+      chevronDownCircleOutline,
       hari: "",
       tanggal: "",
       waktu: "",
@@ -190,9 +267,11 @@ export default defineComponent ({
       namaToko: "",
       jumlahPesanan: "",
       namaDriver: "",
+
       jumlahRetur: 0,
-      jumlahBarangRetur: "",
       jumlahHargaRetur: 0,
+      // jumlahBarangRetur: "",
+      // hargaRetur: 0,
       subRetur: [],
     };
   },
@@ -267,7 +346,7 @@ export default defineComponent ({
         );
         await vm.discardLoading();
       } catch (err) {
-        console.log(err, "errornya dataPO");
+        console.log(err, "errornya listPO");
         await this.discardLoading();
       }
     },
@@ -276,16 +355,28 @@ export default defineComponent ({
       try {
         // noPO, jumlahRetur, bulk
         // bulk = { jumlahBarangRetur, hargaBarangRetur, totalHargaRetur, kualitasRetur, masterReturId, masterBarangId }
-        await this.presentLoading();
         let vm = this;
+        await vm.presentLoading();
+        let penampung1 = {};
+        let penampungBulk = [];
+        vm.subRetur.forEach((elm) => {
+          penampung1.jumlahBarangRetur = elm.jumlahBarangRetur;
+          penampung1.hargaBarangRetur = elm.hargaBarang;
+          penampung1.totalHargaRetur = elm.hargaRetur;
+          penampung1.masterBarangId = elm.masterBarangId;
+          penampungBulk.push(penampung1);
+          penampung1 = {};
+        });
+        console.log(penampungBulk, "penampungBulk");
+        console.log(this.subRetur);
 
-        // const idUser = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
           ipConfig + "/retur/bulkRegister",
           {
             noPO: vm.noPO,
             jumlahRetur: vm.jumlahRetur,
+            bulk: penampungBulk,
           },
           {
             headers: {
@@ -295,6 +386,9 @@ export default defineComponent ({
         );
         console.log(dataResult, "create retur");
         await vm.discardLoading();
+        if (dataResult.statusText == "OK") {
+          await vm.$router.replace("/tabs/retur");
+        }
       } catch (err) {
         console.log(err, "retur gagal");
         await this.discardLoading();
@@ -307,62 +401,41 @@ export default defineComponent ({
       await this.searchPO();
     },
 
-    async addBarangRetur(p) {
-      console.log(p);
-      const modal = await modalController.create({
-        components: modalRetur,
-        componentProps: { dataModalRetur: p },
-      });
-
-      await modal.present();
-
-      // modal
-      //   .onDidDismiss()
-      //   .then((res) => {
-      //     if (res.data == null) {
-      //       console.log("kosong");
-      //     } else {
-      //       console.log("isinya");
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     console.log(err, "diapain ya");
-      //   });
-
-    },
-
-    pilihBarang(p) {
-      console.log(p);
-      this.subRetur = p;
-      console.log(this.subRetur, "subRetur");
-      console.log(this.subRetur.id, "subRetur");
-      console.log(this.subRetur.masterBarangId, "subRetur");
-    },
-
-    async isChecked(ev) {
-      console.log(ev.target.checked);
-      // console.log(ev);
+    async isChecked(ev, p) {
       if (ev.target.checked == false) {
         this.jumlahRetur += 1;
+        this.subRetur.push(p);
       } else {
         this.jumlahRetur -= 1;
+        if (p.hargaRetur != 0) {
+          this.jumlahHargaRetur -= p.hargaRetur;
+        }
+        // this.p.jumlahBarangRetur = 0
+        this.subRetur.forEach((el, id) =>
+          el.masterBarangId == p.masterBarangId
+            ? this.subRetur.splice(id, 1)
+            : "kosong"
+        );
       }
-      console.log(this.jumlahRetur, "jumlahRetur");
+      // console.log(this.subRetur, "jumlahRetur");
     },
 
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
+    testHargaRetur(p) {
+      this.subRetur.forEach((elm, idx) => {
+        if (elm.namaBarang == p.namaBarang) {
+          elm.hargaRetur = p.jumlahBarangRetur * p.hargaBarang;
+          // console.log(p.jumlahBarangRetur, "<<<");
+          // console.log(p.hargaRetur, "<<<");
+        } else {
+          console.log("sama");
+        }
+        // console.log(idx);
+        if (idx > 0) {
+          this.jumlahHargaRetur += this.subRetur[idx].hargaRetur;
+        } else {
+          this.jumlahHargaRetur = this.subRetur[idx].hargaRetur;
+        }
       });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
   },
 });

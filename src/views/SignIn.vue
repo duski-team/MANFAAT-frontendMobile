@@ -74,15 +74,14 @@ import {
   IonInput,
   IonButton,
   IonCheckbox,
-  loadingController,
   alertController,
-  // IonIcon,
 } from "@ionic/vue";
 import { ipConfig } from "../config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
 import { eye } from "ionicons/icons";
 import axios from "axios";
+import Mixins from "../mixins/mixinFunct";
 
 export default {
   components: {
@@ -96,8 +95,10 @@ export default {
     IonInput,
     IonButton,
     IonCheckbox,
-    // IonIcon
   },
+
+  mixins: [Mixins],
+
   setup() {
     const router = useRouter();
     const toSignUp = () => {
@@ -105,6 +106,7 @@ export default {
     };
     return { router, toSignUp };
   },
+
   data() {
     return {
       username: "",
@@ -124,6 +126,7 @@ export default {
           username: vm.username,
           password: vm.password,
         });
+        console.log(JSON.stringify(dataSent.data[1].id), "ini id");
         if (dataSent.data.message) {
           vm.note = dataSent.data.message;
           await vm.discardLoading();
@@ -135,7 +138,7 @@ export default {
           });
           await Storage.set({
             key: "idUser",
-            value: dataSent.data[1].id,
+            value: dataSent.data[1].id + "",
           });
           await Storage.set({
             key: "roleUser",
@@ -160,21 +163,6 @@ export default {
         buttons: ["Tutup"],
       });
       await alert.present();
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
 
     async viewPassword(p) {

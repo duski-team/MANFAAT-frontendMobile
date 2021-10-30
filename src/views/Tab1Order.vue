@@ -123,13 +123,10 @@
 <script>
 // import { ref } from "vue";
 import {
-  loadingController,
   IonList,
   IonListHeader,
   IonItem,
   IonLabel,
-  // IonIcon,
-  // IonButton,
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
@@ -143,14 +140,12 @@ import {
   IonNote,
 } from "@ionic/vue";
 import { useRouter } from "vue-router";
-// import { exit } from "ionicons/icons";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "../config";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
-// import DetailPO from "../components/pages/CreatePO.vue";
-// import PageListPO from "../components/pages/order/ListPO.vue";
+import mixinFunct from '../mixins/mixinFunct';
 
 export default {
   name: "Purchase Order",
@@ -174,6 +169,7 @@ export default {
     IonNote,
     // PageListPO,
   },
+  mixins: [mixinFunct],
   data() {
     return {
       // exit,
@@ -205,7 +201,7 @@ export default {
     }
     if (!this.tanggal && !this.waktu) {
       await this.testMoment();
-      await this.clockInterval();
+      // await this.clockInterval();
     }
   },
   watch: {
@@ -259,9 +255,8 @@ export default {
     // },
     async dataToko() {
       try {
-        await this.presentLoading();
-
         let vm = this;
+        await vm.presentLoading();
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
           ipConfig + "/masterToko/listByUserLogin",
@@ -276,7 +271,7 @@ export default {
         );
 
         if (vm.listToko) {
-          await this.discardLoading();
+          await vm.discardLoading();
         }
       } catch (err) {
         console.log(err, "errornya datatoko");
@@ -341,7 +336,7 @@ export default {
     },
 
     async doRefresh(ev) {
-      await this.clockInterval();
+      // await this.clockInterval();
       await this.testMoment();
       await this.dataPO();
       await this.dataToko();
@@ -369,21 +364,6 @@ export default {
         this.testMoment();
         console.log("clockInterval");
       }, 10000);
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
   },
 };

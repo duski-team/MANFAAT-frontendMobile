@@ -31,12 +31,12 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  loadingController,
 } from "@ionic/vue";
 import { defineComponent } from "vue";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "@/config";
 import axios from "axios";
+import mixinFunct from "../../../mixins/mixinFunct";
 
 export default defineComponent({
   components: {
@@ -49,6 +49,7 @@ export default defineComponent({
   },
 
   props: ["segmentProps"],
+  mixins: [mixinFunct],
 
   data() {
     return {
@@ -71,14 +72,8 @@ export default defineComponent({
   methods: {
     async dataPO() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
-
         let vm = this;
+        await vm.presentLoading();
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
           ipConfig + "/masterPO/listByUserLogin",
@@ -90,11 +85,11 @@ export default defineComponent({
         );
         console.log(dataResult.data, ">>>");
         vm.listPO = await dataResult.data;
-        console.log(this.listPO, "listPO");
-        await loading.dismiss();
+        // console.log(this.listPO, "listPO");
+        await vm.discardLoading();
       } catch (err) {
         console.log(err, "errornya dataPO");
-        await loadingController.dismiss();
+        await this.discardLoading();
       }
     },
   },

@@ -89,18 +89,30 @@
             <ion-list-header>
               <ion-label class="ion-text-start">
                 <h3>
-                  <ion-skeleton-text animated style="width: 20%"></ion-skeleton-text>
+                  <ion-skeleton-text
+                    animated
+                    style="width: 20%"
+                  ></ion-skeleton-text>
                 </h3>
                 <h2>
-                  <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+                  <ion-skeleton-text
+                    animated
+                    style="width: 60%"
+                  ></ion-skeleton-text>
                 </h2>
               </ion-label>
               <ion-label class="ion-text-end ion-margin-end">
                 <h3>
-                  <ion-skeleton-text animated style="width: 20%"></ion-skeleton-text>
+                  <ion-skeleton-text
+                    animated
+                    style="width: 20%"
+                  ></ion-skeleton-text>
                 </h3>
                 <h2>
-                  <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+                  <ion-skeleton-text
+                    animated
+                    style="width: 40%"
+                  ></ion-skeleton-text>
                 </h2>
               </ion-label>
             </ion-list-header>
@@ -162,12 +174,12 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonSkeletonText,
-  loadingController,
 } from "@ionic/vue";
 import { ipConfig } from "@/config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import mixinFunct from "../../../mixins/mixinFunct";
 
 export default {
   components: {
@@ -184,6 +196,7 @@ export default {
     IonRefresherContent,
     IonSkeletonText,
   },
+  mixins: [mixinFunct],
   data() {
     return {
       dataPO: [],
@@ -200,14 +213,8 @@ export default {
   methods: {
     async getDataPO() {
       try {
-        const loading = await loadingController.create({
-          spinner: "circles",
-          message: "Loading...",
-          translucent: true,
-        });
-        await loading.present();
-
         let vm = this;
+        await vm.presentLoading();
         const noPO = await Storage.get({ key: "noPO" });
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
@@ -221,10 +228,10 @@ export default {
 
         vm.dataPO = dataResult.data[0];
         vm.itemPO = dataResult.data;
-        await loading.dismiss();
+        await vm.discardLoading();
       } catch (err) {
         console.log(err, "catchnya jon");
-        await loadingController.dismiss();
+        await this.discardLoading();
       }
     },
     async doRefresh(ev) {

@@ -81,7 +81,6 @@ import {
   IonRefresherContent,
   IonFab,
   IonFabButton,
-  loadingController,
   modalController,
 } from "@ionic/vue";
 import { add, search } from "ionicons/icons";
@@ -92,6 +91,7 @@ import modalToko from "@/components/pages/toko/ModalToko.vue";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
+import mixinFunct from "../mixins/mixinFunct";
 
 export default {
   name: "DaftarToko",
@@ -110,6 +110,9 @@ export default {
     IonFab,
     IonFabButton,
   },
+
+  mixins: [mixinFunct],
+
   data() {
     return {
       add,
@@ -186,21 +189,6 @@ export default {
         component: modalToko,
       });
       return await modal.present();
-    },
-
-    async presentLoading() {
-      const loading = await loadingController.create({
-        spinner: "circles",
-        message: "Mohon Tunggu...",
-        translucent: true,
-      });
-      await loading.present();
-    },
-
-    async discardLoading() {
-      await setTimeout(() => {
-        loadingController.dismiss();
-      }, 1000);
     },
   },
 };
