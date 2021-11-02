@@ -1,7 +1,7 @@
 <template>
   <base-layout page-title="MANFA'AT" screen-content="true">
     <template v-slot:actions-end>
-      <ion-button @click="signout">
+      <ion-button @click="signoutAlert">
         <ion-icon slot="icon-only" :icon="exit"></ion-icon>
       </ion-button>
     </template>
@@ -40,7 +40,7 @@
                   <ion-list-header>
                     <ion-label>
                       <h4>Sugeng Rawuh,</h4>
-                      <h1>{{ profileSales.nama }}</h1>
+                      <h1>{{ profileSales.username }}</h1>
                     </ion-label>
 
                     <ion-label class="ion-text-end ion-margin-end">
@@ -57,115 +57,194 @@
                     </ion-card-header>
 
                     <ion-card-content class="ion-no-padding ion-no-margin">
-                      <ion-item lines="none">
-                        <ion-grid>
-                          <ion-row>
-                            <ion-col>
-                              <ion-label>
-                                <h1>Toko</h1>
-                              </ion-label>
-                            </ion-col>
-                            <ion-col>
-                              <ion-label class="ion-text-end" readonly>
-                                <h3>{{ tokoSales.length }} - Toko Terdaftar</h3>
-                              </ion-label>
-                            </ion-col>
-                          </ion-row>
-                        </ion-grid>
-                      </ion-item>
-
-                      <ion-item lines="none">
-                        <ion-grid>
-                          <ion-row>
-                            <ion-col>
-                              <ion-label>
-                                <h1>Penjualan</h1>
-                              </ion-label>
-                            </ion-col>
-                            <ion-col class="ion-text-end">
-                              <ion-label>
-                                <h3>{{ orderSales.jumlahPO }} - PO Terbuat</h3>
-                                <h3>
-                                  Rp.{{ orderSales.totalHargaPO }} - Total
-                                  Nominal
-                                </h3>
-                              </ion-label>
-                            </ion-col>
-                          </ion-row>
-                        </ion-grid>
-                      </ion-item>
-
-                      <ion-item lines="none">
-                        <ion-grid>
-                          <ion-row>
-                            <ion-col>
-                              <ion-label>
-                                <h1>Retur</h1>
-                              </ion-label>
-                            </ion-col>
-                            <ion-col class="ion-text-end">
-                              <ion-label>
-                                <h3>
-                                  {{
-                                    returSales.totalRetur
-                                      ? returSales.totalRetur
-                                      : "0"
-                                  }}
-                                  - Retur Terbuat
-                                </h3>
-                              </ion-label>
-                            </ion-col>
-                          </ion-row>
-                        </ion-grid>
-                      </ion-item>
-
-                      <ion-item lines="none">
-                        <ion-grid>
-                          <ion-row>
-                            <ion-col size="4">
-                              <ion-label>
-                                <h1>Barang</h1>
-                              </ion-label>
-                            </ion-col>
-                            <ion-col size="8">
-                              <ion-item lines="none" class="ion-text-end">
+                      <ion-list lines="full">
+                        <ion-item>
+                          <ion-grid>
+                            <ion-row>
+                              <ion-col>
                                 <ion-label>
-                                  <h2>
-                                    {{ jumlahTotalBarang }} - Total Barang
-                                  </h2>
+                                  <h1>Toko</h1>
+                                </ion-label>
+                              </ion-col>
+                              <ion-col>
+                                <ion-label class="ion-text-end" readonly>
+                                  <h3>
+                                    {{ tokoSales.length }} - Toko Terdaftar
+                                  </h3>
+                                </ion-label>
+                              </ion-col>
+                            </ion-row>
+                          </ion-grid>
+                        </ion-item>
+
+                        <ion-item>
+                          <ion-grid>
+                            <ion-row>
+                              <ion-col>
+                                <ion-label>
+                                  <h1>Order</h1>
+                                </ion-label>
+                              </ion-col>
+                              <ion-col class="ion-text-end">
+                                <ion-label>
+                                  <h3>
+                                    {{ orderSales.jumlahPO }} - PO Terbuat
+                                  </h3>
+                                  <h3>
+                                    {{ totalHargaPOFormat }} - Total Nominal
+                                  </h3>
+                                </ion-label>
+                              </ion-col>
+                            </ion-row>
+                          </ion-grid>
+                        </ion-item>
+
+                        <ion-item>
+                          <ion-grid>
+                            <ion-row>
+                              <ion-col>
+                                <ion-label>
+                                  <h1>Retur</h1>
+                                </ion-label>
+                              </ion-col>
+                              <ion-col class="ion-text-end">
+                                <ion-label>
+                                  <h3>
+                                    {{
+                                      returSales.totalRetur
+                                        ? returSales.totalRetur
+                                        : "0"
+                                    }}
+                                    - Retur Terbuat
+                                  </h3>
+                                </ion-label>
+                              </ion-col>
+                            </ion-row>
+                          </ion-grid>
+                        </ion-item>
+
+                        <ion-item lines="none">
+                          <ion-grid>
+                            <ion-row>
+                              <ion-col size="12">
+                                <ion-label>
+                                  <h1>Barang</h1>
+                                </ion-label>
+                              </ion-col>
+                              <ion-col v-if="jumlahTotalBarang">
+                                <ion-item lines="none" class="ion-text-end">
+                                  <ion-label>
+                                    <h2>
+                                      {{ jumlahTotalBarang }} - Total Barang
+                                    </h2>
+                                  </ion-label>
+                                  <ion-button
+                                    slot="end"
+                                    fill="clear"
+                                    v-if="dropDown"
+                                    @click="dropDown = false"
+                                  >
+                                    <ion-icon
+                                      slot="icon-only"
+                                      :icon="caretForwardOutline"
+                                    ></ion-icon>
+                                  </ion-button>
+                                  <ion-button
+                                    slot="end"
+                                    fill="clear"
+                                    v-else
+                                    @click="dropDown = true"
+                                  >
+                                    <ion-icon
+                                      slot="icon-only"
+                                      :icon="caretDownOutline"
+                                    ></ion-icon>
+                                  </ion-button>
+                                </ion-item>
+                              </ion-col>
+                              <ion-col v-else>
+                                <ion-item lines="none" class="ion-text-end">
+                                  <ion-label>
+                                    <h2>
+                                      0 - Total Barang
+                                    </h2>
+                                  </ion-label>
+                                </ion-item>
+                              </ion-col>
+                            </ion-row>
+                          </ion-grid>
+                        </ion-item>
+                        <ion-grid v-if="!dropDown">
+                          <ion-row>
+                            <ion-col>
+                              <ion-item lines="none">
+                                <ion-label>
+                                  <p>List Barang</p>
                                 </ion-label>
                               </ion-item>
                             </ion-col>
-                          </ion-row>
-                          <ion-row>
                             <ion-col>
                               <ion-item
                                 v-for="(barangSales, index) in barangSales"
                                 :key="index"
                                 lines="none"
                               >
-                                <!-- <ion-label class="ion-text-start">
-                                  <h3>{{ barangSales.namaBarang }}</h3>
-                                </ion-label> -->
-                                <ion-label class="ion-text-end">
-                                  <h3>
-                                    {{ barangSales.namaBarang }} -
-                                    {{ barangSales.totalBarang }}
-                                  </h3>
+                                <ion-label>{{
+                                  barangSales.namaBarang
+                                }}</ion-label>
+                                <ion-input
+                                  readonly
+                                  class="ion-text-end"
+                                  v-model="barangSales.totalBarang"
+                                ></ion-input>
+                              </ion-item>
+                            </ion-col>
+                          </ion-row>
+                        </ion-grid>
+                        <ion-grid v-else>
+                          <ion-row>
+                            <ion-col>
+                              <ion-item lines="none">
+                                <ion-label>
+                                  <p>List Barang</p>
                                 </ion-label>
                               </ion-item>
                             </ion-col>
                           </ion-row>
                         </ion-grid>
-                      </ion-item>
+                      </ion-list>
+                      <ion-list>
+                        <ion-grid>
+                          <ion-row>
+                            <ion-col>
+                              <ion-item lines="none">
+                                <ion-label>
+                                  <h1>Penjualan</h1>
+                                </ion-label>
+                              </ion-item>
+                            </ion-col>
+                            <ion-col>
+                              <ion-item lines="full" class="ion-text-end">
+                                <ion-label>
+                                  <h2>
+                                    {{ totalHargaPOFormat }} /
+                                    {{ targetPenjualanFormat }}
+                                  </h2>
+                                </ion-label>
+                              </ion-item>
+                              <ion-item lines="none" class="ion-text-end">
+                                <ion-label>
+                                  <h2>{{ persentaseTarget }}% dari target</h2>
+                                </ion-label>
+                              </ion-item>
+                            </ion-col>
+                          </ion-row>
+                        </ion-grid>
+                      </ion-list>
                     </ion-card-content>
                   </ion-card>
 
-                  <ion-card v-else>
-                    <ion-item>
-                      <h1>loading...</h1>
-                    </ion-item>
-                  </ion-card>
+                  <performance-page-loader v-else />
                 </ion-list>
               </ion-col>
             </ion-row>
@@ -174,13 +253,7 @@
       </ion-row>
     </ion-grid>
 
-    <ion-grid v-else>
-      <ion-row>
-        <ion-col>
-          <h1>Loading...</h1>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <dashboard-loader v-else />
   </base-layout>
 </template>
 
@@ -195,22 +268,32 @@ import {
   IonListHeader,
   IonItem,
   IonLabel,
+  IonInput,
   IonButton,
   IonIcon,
   IonCard,
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
+  alertController,
 } from "@ionic/vue";
 import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
-import { exit, chevronDownCircleOutline } from "ionicons/icons";
+import {
+  exit,
+  chevronDownCircleOutline,
+  caretForwardOutline,
+  caretDownOutline,
+} from "ionicons/icons";
 import { Storage } from "@capacitor/storage";
 import { ipConfig } from "../config";
+import accounting from "accounting-js";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
 import mixinFunct from "../mixins/mixinFunct";
+import DashboardLoader from "../components/pages/dashboard/DashboardLoader.vue";
+import PerformancePageLoader from "../components/pages/dashboard/PerformancePageLoader.vue";
 
 export default defineComponent({
   components: {
@@ -223,21 +306,21 @@ export default defineComponent({
     IonListHeader,
     IonItem,
     IonLabel,
-    // IonInput,
+    IonInput,
     IonButton,
     IonIcon,
     IonCard,
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
+    DashboardLoader,
+    PerformancePageLoader,
   },
   mixins: [mixinFunct],
 
   data() {
     return {
-      exit,
-      chevronDownCircleOutline,
-      close,
+      dropDown: true,
       hari: "",
       tanggal: "",
       waktu: "",
@@ -250,29 +333,58 @@ export default defineComponent({
       jumlahTotalBarang: 0,
       tokoSales: [],
       returSales: [],
+      totalHargaPOFormat: "",
+      targetPenjualanFormat: "",
+      persentaseTarget: 0,
     };
   },
   setup() {
     const router = useRouter();
-    return { router };
+    return {
+      router,
+      exit,
+      chevronDownCircleOutline,
+      caretForwardOutline,
+      caretDownOutline,
+    };
   },
 
   async ionViewWillEnter() {
     // await this.getProfile()
+    await this.presentLoading();
     if (!this.profileSales) {
       await this.getProfile();
+      // await this.getPerformanceToko();
+      // await this.getPerformanceOrder();
+      // await this.getPerformanceRetur();
+      // await this.getPerformanceBarang();
       await this.getPerformance();
+      // if (this.tokoSales && this.orderSales && this.returSales && this.barangSales) {
+      //   this.performanceSales = true
+      // }
     }
     if (!this.tanggal && !this.waktu) {
       await this.runMoment();
       await this.clockInterval();
     }
+    // console.log("lewat mana");
+    await this.percentageCount();
+
+    await this.discardLoading();
   },
+
+  // async ionViewDidEnter() {
+  //   // if (this.profileSales.targetPenjualan && this.orderSales.totalHargaPO) {
+  //     console.log("lewat");
+  //     this.percentageCount()
+  //   // }
+  // },
+
   methods: {
     async getProfile() {
       try {
-        await this.presentLoading();
         let vm = this;
+        // await vm.presentLoading();
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(ipConfig + "/users/profile", {
           headers: {
@@ -280,22 +392,85 @@ export default defineComponent({
           },
         });
         vm.profileSales = dataResult.data.respon[0];
+        vm.targetPenjualanFormat = accounting.formatMoney(
+          vm.profileSales.targetPenjualan,
+          {
+            symbol: "Rp",
+            precicsion: 2,
+            thousand: ".",
+            decimal: ",",
+            format: {
+              pos: "%s %v",
+              neg: "%s (%v)",
+              zero: "-",
+            },
+          }
+        );
+        // console.log(vm.profileSales);
         if (vm.profileSales.wilayah.namaWilayah) {
           vm.wilayahSales = vm.profileSales.wilayah.namaWilayah;
         } else {
           vm.wilayahSales = "-";
         }
-        await this.discardLoading();
+        // await vm.discardLoading();
       } catch (err) {
         console.log(err, "errornya profile");
-        await this.discardLoading();
+        // await this.discardLoading();
       }
     },
+
+    // async getPerformanceToko() {
+    //   try {
+    //     // let vm = this;
+    //     const dataToken =await Storage.get({ key: "token" })
+    //     const reqToko = await axios.get( ipConfig + "/masterToko/listTokoBaruBySalesLogin", { headers: { token: dataToken.value }})
+    //     console.log(reqToko);
+
+    //   } catch (err) {
+    //     console.log(err, "err = toko");
+    //   }
+    // },
+    // async getPerformanceOrder() {
+    //   try {
+    //     // let vm = this;
+    //     const dataUserId = await Storage.get({ key: "idUser" });
+    //     const dataToken =await Storage.get({ key: "token" })
+    //     const reqOrder = await axios.get( ipConfig + "/masterPO/jumlahBySales/" + dataUserId.value, { headers: { token: dataToken.value }})
+    //     console.log(reqOrder);
+
+    //   } catch (err) {
+    //     console.log(err, "err = order");
+    //   }
+    // },
+    // async getPerformanceRetur() {
+    //   try {
+    //     // let vm = this;
+    //     const dataUserId = await Storage.get({ key: "idUser" });
+    //     const dataToken =await Storage.get({ key: "token" })
+    //     const reqRetur = await axios.get( ipConfig + "/retur/totalReturBySales/" + dataUserId.value, { headers: { token: dataToken.value }})
+    //     console.log(reqRetur);
+
+    //   } catch (err) {
+    //     console.log(err, "err = retur");
+    //   }
+    // },
+    // async getPerformanceBarang() {
+    //   try {
+    //     // let vm = this;
+    //     const dataUserId = await Storage.get({ key: "idUser" });
+    //     const dataToken =await Storage.get({ key: "token" })
+    //     const reqBarang = await axios.get( ipConfig + "/masterPO/totalJualBySales/" + dataUserId.value, { headers: { token: dataToken.value }})
+    //     console.log(reqBarang);
+
+    //   } catch (err) {
+    //     console.log(err, "err = barang");
+    //   }
+    // },
 
     async getPerformance() {
       try {
         let vm = this;
-        await vm.presentLoading();
+        // await vm.presentLoading();
         const dataUserId = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
         const reqOne = await axios.get(
@@ -333,27 +508,56 @@ export default defineComponent({
 
         const dataResult = await axios.all([reqOne, reqTwo, reqThree, reqFour]);
         // console.log(dataResult, "hasil request");
-        vm.orderSales = dataResult[0].data;
-        // console.log(this.orderSales, "hasil order");
+        if (dataResult) {
+          vm.orderSales = dataResult[0].data;
+          vm.totalHargaPOFormat = accounting.formatMoney(
+            vm.orderSales.totalHargaPO,
+            {
+              symbol: "Rp",
+              precicsion: 2,
+              thousand: ".",
+              decimal: ",",
+              format: {
+                pos: "%s %v",
+                neg: "%s (%v)",
+                zero: "-",
+              },
+            }
+          );
+          // console.log(this.orderSales, "hasil order");
 
-        vm.barangSales = dataResult[1].data.data;
-        vm.barangSales.forEach((el) => {
-          vm.jumlahTotalBarang += Number(el.totalBarang);
-        });
-        // console.log(this.barangSales, "hasil barang");
+          vm.barangSales = dataResult[1].data.data;
+          vm.barangSales.forEach((el) => {
+            vm.jumlahTotalBarang += Number(el.totalBarang);
+          });
+          // console.log(this.barangSales, "hasil barang");
 
-        vm.tokoSales = dataResult[2].data.data;
-        // console.log(this.tokoSales, "hasil toko");
+          vm.tokoSales = dataResult[2].data.data;
+          // console.log(this.tokoSales, "hasil toko");
 
-        vm.returSales = dataResult[3].data.data[0];
-        // console.log(this.returSales.totalRetur, "hasil retur");
+          vm.returSales = dataResult[3].data.data[0];
+          // console.log(this.returSales, "hasil retur");
 
-        vm.performanceSales = true;
-        await this.discardLoading();
+          vm.performanceSales = true;
+          // await vm.discardLoading();
+        } else {
+          vm.performanceSales = false;
+          // await vm.discardLoading();
+        }
       } catch (err) {
         console.log(err, "errornya performance");
-        await this.discardLoading();
+        // await this.discardLoading();
       }
+    },
+
+    async percentageCount() {
+      let vm = this;
+      // console.log(vm.orderSales.totalHargaPO);
+      // console.log(vm.profileSales.targetPenjualan);
+      vm.persentaseTarget =
+        (await (Number(vm.orderSales.totalHargaPO) /
+          Number(vm.profileSales.targetPenjualan))) * 100;
+      // console.log(vm.persentaseTarget, "%");
     },
 
     async runMoment() {
@@ -377,11 +581,35 @@ export default defineComponent({
     async doRefresh(ev) {
       await this.getProfile();
       await this.getPerformance();
-      await this.runMoment();
+      // await this.runMoment();
       await this.clockInterval();
       await setInterval(() => {
         ev.target.complete();
       }, 1000);
+    },
+
+    async dropDownBarangSales() {
+      console.log("pencet");
+    },
+
+    async signoutAlert() {
+      const alert = await alertController.create({
+        header: "Perhatian!",
+        message: "Apakah anda yakin ingin keluar?",
+        buttons: [
+          {
+            text: "Tidak",
+            role: "cancel",
+          },
+          {
+            text: "Iya",
+            handler: () => {
+              this.signout();
+            },
+          },
+        ],
+      });
+      return alert.present();
     },
 
     async signout() {

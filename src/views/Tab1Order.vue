@@ -1,10 +1,10 @@
 <template>
   <base-layout page-title="MANFA'AT">
-    <template v-slot:actions-end>
-      <!-- <ion-button @click="signout">
+    <!-- <template v-slot:actions-end>
+      <ion-button @click="signout">
         <ion-icon slot="icon-only" :icon="exit"></ion-icon>
-      </ion-button> -->
-    </template>
+      </ion-button>
+    </template> -->
 
     <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
       <ion-refresher-content></ion-refresher-content>
@@ -105,7 +105,7 @@
                   >
                     <ion-label>
                       <h2>PO: {{ listPO.noPO }}</h2>
-                      <h3>{{ listPO.namaToko }}</h3>
+                      <h3>Jumlah Pesanan - {{ listPO.jumlahPesanan }}</h3>
                       <p>{{ listPO.tanggalPesan }}</p>
                     </ion-label>
                   </ion-item>
@@ -294,7 +294,7 @@ export default {
         );
 
         let hasil = dataResult.data.data;
-        // console.log(hasil);
+        console.log(hasil, "<<<");
         hasil.forEach((el) => {
           el.tanggalPesan = moment(el.tanggalPesan).format("dddd, L");
         });

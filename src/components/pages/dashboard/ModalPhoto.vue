@@ -19,7 +19,7 @@
             <ion-grid>
               <ion-row>
                 <ion-col>
-                  <ion-button expand="block" @click="kirimAbsen"
+                  <ion-button expand="block" @click="modalPhotoAlert"
                     >Kirim</ion-button
                   >
                 </ion-col>
@@ -111,7 +111,7 @@ export default defineComponent({
             },
           }
         );
-        // console.log(JSON.stringify(dataResult.data, "<<<<"));
+        console.log(JSON.stringify(dataResult.data, "<<<<"));
         // vm.note = dataResult.data.message
         if (dataResult.data) {
           //   await vm.presentAlert();
@@ -131,12 +131,22 @@ export default defineComponent({
       console.log("batal");
     },
 
-    async presentAlert() {
+    async modalPhotoAlert() {
       const alert = await alertController.create({
-        message: this.note,
-        buttons: ["Tutup"],
+        header: "Perhatian!",
+        message: "Absen Toko?",
+        buttons: [{
+            text: "Tidak",
+            role: "cancel",
+          },
+          {
+            text: "Iya",
+            handler: () => {
+              this.kirimAbsen();
+            },
+          }],
       });
-      await alert.present();
+       return await alert.present();
     },
   },
 });

@@ -148,7 +148,7 @@ export default {
             },
           }
         );
-        // console.log("list retur", dataResult.data.data);
+        console.log("list retur", dataResult.data.data);
 
         if (dataResult.data.length) {
           vm.listRetur = dataResult.data.data.sort((a, b) =>

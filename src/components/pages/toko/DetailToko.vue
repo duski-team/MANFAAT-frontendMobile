@@ -219,9 +219,9 @@ export default {
           }
         );
         if (dataResult.data) {
-          this.note = "Berhasil di update";
+          vm.note = dataResult.data.toLowerCase().replace(/\w/, firstLetter => firstLetter.toUpperCase());
         }
-        vm.note = dataResult.data;
+        // vm.note.toLowerCase().replace(/\w/, firstLetter => firstLetter.toUpperCase());
         console.log(vm.note);
 
         await vm.discardLoading();
