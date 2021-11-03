@@ -116,17 +116,16 @@ export default {
       eye,
     };
   },
+
   methods: {
     async signin() {
       try {
-        await this.presentLoading();
-
         let vm = this;
+        await vm.presentLoading();
         let dataSent = await axios.post(ipConfig + "/users/login", {
           username: vm.username,
           password: vm.password,
         });
-        console.log(JSON.stringify(dataSent.data[1].id), "ini id");
         if (dataSent.data.message) {
           vm.note = dataSent.data.message;
           await vm.discardLoading();
@@ -156,7 +155,6 @@ export default {
         await this.presentAlert();
       }
     },
-
     async presentAlert() {
       const alert = await alertController.create({
         message: this.note,
@@ -164,7 +162,6 @@ export default {
       });
       await alert.present();
     },
-
     async viewPassword(p) {
       if (p.target.checked == false) {
         this.viewClicked = true;

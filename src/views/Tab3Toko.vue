@@ -1,7 +1,8 @@
 <template>
   <base-layout page-title="MANFA'AT">
     <template v-slot:actions-end>
-      <ion-button router-link="/tabs/toko/tambah/">
+      <!-- <ion-button router-link="/tabs/toko/tambah/"> -->
+      <ion-button @click="tambahToko">
         <ion-icon slot="icon-only" :icon="add"></ion-icon>
       </ion-button>
     </template>
@@ -119,6 +120,7 @@ export default {
       search,
       listToko: [],
       namaWilayah: "",
+      idWilayah: "",
       hari: "",
       tanggal: "",
       waktu: "",
@@ -154,7 +156,7 @@ export default {
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
         vm.namaWilayah = vm.listToko[0].namaWilayah;
-        // console.log(vm.listToko);
+        vm.idWilayah = vm.listToko[0].wilayahId;
         if (vm.listToko) {
           await this.discardLoading();
         }
@@ -190,6 +192,11 @@ export default {
       });
       return await modal.present();
     },
+
+    async tambahToko() {
+      await Storage.set({ key: "namaWilayah", value: this.namaWilayah })
+      await this.$router.push("/tabs/toko/tambah")
+    }
   },
 };
 </script>

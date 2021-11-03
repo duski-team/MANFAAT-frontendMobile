@@ -10,8 +10,6 @@
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <ion-progress-bar v-if="showLoader" :value="testValue"></ion-progress-bar>
-
     <ion-item lines="none">
       <ion-grid>
         <ion-row>
@@ -55,7 +53,7 @@
             <ion-item
               v-for="(listRetur, index) in listRetur"
               :key="index"
-              @click="openDetailRetur(listRetur.noPO)"
+              @click="openDetailRetur(listRetur.id)"
               lines="full"
               detail
             >
@@ -83,7 +81,6 @@ import {
   IonIcon,
   IonRefresher,
   IonRefresherContent,
-  IonProgressBar,
 } from "@ionic/vue";
 import { add } from "ionicons/icons";
 import { useRouter } from "vue-router";
@@ -108,8 +105,8 @@ export default {
     IonIcon,
     IonRefresher,
     IonRefresherContent,
-    IonProgressBar,
   },
+
   mixins: [mixinFunct],
 
   data() {
@@ -120,25 +117,26 @@ export default {
       tanggal: "",
       waktu: "",
       testValue: 0,
-      showLoader: false,
     };
   },
+
   setup() {
     const router = useRouter();
     const currentDate = new Date();
     return { router, currentDate };
   },
+
   async ionViewDidEnter() {
+    await this.presentLoading();
     await this.getRetur();
     await this.testMoment();
+    await this.discardLoading();
   },
+
   methods: {
     async getRetur() {
       try {
-        await this.presentLoading();
-
         let vm = this;
-        // this.runDeterminateProgress()
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
           ipConfig + "/retur/listByUsersLogin",
@@ -148,8 +146,6 @@ export default {
             },
           }
         );
-        console.log("list retur", dataResult.data.data);
-
         if (dataResult.data.length) {
           vm.listRetur = dataResult.data.data.sort((a, b) =>
             a.id > b.id ? 1 : b.id > a.id ? -1 : 0
@@ -157,21 +153,24 @@ export default {
         } else {
           vm.listRetur = dataResult.data.data;
         }
-        // console.log(vm.listRetur);
-        if (vm.listRetur) {
-          await this.discardLoading();
-        }
       } catch (err) {
         console.log(err, "errornya listRetur");
-        await this.discardLoading();
       }
     },
-
     async openDetailRetur(p) {
       console.log(`detail retur`, p);
-      // console.log(`detail retur ${noPO}`);
-    },
+      
+      await Storage.set({ key: "returId", value: p.toString() });
+      await this.$router.push("/tabs/retur/details");
 
+      // const dataToken = await Storage.get({ key: "token" });
+      // const dataResult = await axios.get(ipConfig + "/retur/listReturById/" + p.id, {
+      //   headers: {
+      //     token: dataToken.value,
+      //   },
+      // });
+      // console.log(dataResult);
+    },
     async doRefresh(ev) {
       // console.log(ev);
       await this.getRetur();
@@ -181,7 +180,6 @@ export default {
         ev.target.complete();
       }
     },
-
     async testMoment() {
       this.hari = await moment().format("dddd");
       this.tanggal = await moment().format("LL");

@@ -1,11 +1,5 @@
 <template>
   <base-layout page-title="MANFA'AT">
-    <!-- <template v-slot:actions-end>
-      <ion-button @click="signout">
-        <ion-icon slot="icon-only" :icon="exit"></ion-icon>
-      </ion-button>
-    </template> -->
-
     <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
@@ -63,7 +57,6 @@
                       lines="full"
                       detail
                     >
-                      <!-- <ion-note slot="start">{{ index }}</ion-note> -->
                       <ion-label>
                         <h2>{{ item.namaToko }}</h2>
                         <p>{{ item.namaWilayah }}</p>
@@ -113,7 +106,6 @@
               </ion-col>
             </ion-row>
           </ion-grid>
-          <!-- <PageListPO :segmentProps="selectedSegment" ></PageListPO> -->
         </ion-slide>
       </ion-slides>
     </ion-list>
@@ -121,7 +113,6 @@
 </template>
 
 <script>
-// import { ref } from "vue";
 import {
   IonList,
   IonListHeader,
@@ -145,7 +136,7 @@ import { ipConfig } from "../config";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
-import mixinFunct from '../mixins/mixinFunct';
+import mixinFunct from "../mixins/mixinFunct";
 
 export default {
   name: "Purchase Order",
@@ -154,8 +145,6 @@ export default {
     IonListHeader,
     IonItem,
     IonLabel,
-    // IonIcon,
-    // IonButton,
     IonSearchbar,
     IonSegment,
     IonSegmentButton,
@@ -167,12 +156,12 @@ export default {
     IonRefresher,
     IonRefresherContent,
     IonNote,
-    // PageListPO,
   },
+
   mixins: [mixinFunct],
+
   data() {
     return {
-      // exit,
       listToko: [],
       listPO: [],
       isItemAvailable: false,
@@ -191,72 +180,34 @@ export default {
       initialSlide: 0,
       speed: 500,
     };
-
     return { router, slideOptions };
   },
 
   async ionViewWillEnter() {
+    this.presentLoading();
     if (!this.listToko.length) {
       await this.dataToko();
     }
     if (!this.tanggal && !this.waktu) {
       await this.testMoment();
-      // await this.clockInterval();
     }
+    this.discardLoading();
   },
+
   watch: {
     selectedSegment: function() {
-      // console.log(newSegment, "new");
-      // console.log(oldSegment, "old");
       if (this.selectedSegment == 2) {
+        this.presentLoading();
         this.dataPO();
       }
-    },
-    slideOptions: function(newSlide, oldSlide) {
-      console.log(newSlide, "new");
-      console.log(oldSlide, "old");
+      this.discardLoading();
     },
   },
 
   methods: {
-    // listALL
-    // async dataToko() {
-    //   try {
-    //     const loading = await loadingController.create({
-    //       spinner: "circles",
-    //       message: "Loading...",
-    //       translucent: true,
-    //     });
-    //     await loading.present();
-
-    //     let vm = this;
-    //     const dataToken = await Storage.get({ key: "token" });
-    //     const dataResult = await axios.get(ipConfig + "/masterToko/list", {
-    //       headers: {
-    //         token: dataToken.value,
-    //       },
-    //     });
-    //     let setWilayah = [];
-    //     dataResult.data.forEach((el) => {
-    //       if (el.wilayahId == 2) {
-    //         setWilayah.push(el);
-    //       }
-    //     });
-    //     vm.listToko = setWilayah.sort((a, b) =>
-    //       a.wilayahId > b.wilayahId ? 1 : b.wilayahId > a.wilayahId ? -1 : 0
-    //     );
-
-    //     if (vm.listToko) {
-    //       loading.dismiss();
-    //     }
-    //   } catch (err) {
-    //     console.log(err, "errornya datatoko");
-    //   }
-    // },
     async dataToko() {
       try {
         let vm = this;
-        await vm.presentLoading();
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
           ipConfig + "/masterToko/listByUserLogin",
@@ -269,19 +220,12 @@ export default {
         vm.listToko = dataResult.data.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
-
-        if (vm.listToko) {
-          await vm.discardLoading();
-        }
       } catch (err) {
         console.log(err, "errornya datatoko");
-        await this.discardLoading();
       }
     },
     async dataPO() {
       try {
-        await this.presentLoading();
-
         let vm = this;
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
@@ -292,22 +236,17 @@ export default {
             },
           }
         );
-
         let hasil = dataResult.data.data;
-        console.log(hasil, "<<<");
         hasil.forEach((el) => {
           el.tanggalPesan = moment(el.tanggalPesan).format("dddd, L");
         });
         vm.listPO = await hasil.sort((a, b) =>
           a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         );
-        await this.discardLoading();
       } catch (err) {
         console.log(err, "errornya dataPO");
-        await this.discardLoading();
       }
     },
-
     initializeItems() {
       this.items = this.listToko;
     },
@@ -315,7 +254,6 @@ export default {
       await Storage.set({ key: "tokoId", value: paramsnya.toString() });
       await this.$router.push("/tabs/order/details");
     },
-
     async openlistPO(paramsnya) {
       await Storage.set({ key: "noPO", value: paramsnya.toString() });
       await this.$router.push("/detailListPO");
@@ -323,7 +261,6 @@ export default {
     async searchToko(ev) {
       // reset
       this.initializeItems();
-      // console.log(ev.detail.value);
       const val = ev.detail.value;
       if (val && val.trim() !== "") {
         this.isItemAvailable = true;
@@ -334,10 +271,8 @@ export default {
         this.isItemAvailable = false;
       }
     },
-
     async doRefresh(ev) {
-      // await this.clockInterval();
-      await this.testMoment();
+      await this.clockInterval();
       await this.dataPO();
       await this.dataToko();
 
@@ -346,24 +281,12 @@ export default {
       }
     },
     async segmentChanged(ev) {
-      // console.log("segment changed", ev.detail.value);
       this.selectedSegment = ev.detail.value;
     },
     async testMoment() {
       this.hari = await moment().format("dddd");
       this.tanggal = await moment().format("LL");
       this.waktu = await moment().format("LT");
-      // this.tanggalPesan = await moment().format("YYYY-MM-DD");
-
-      console.log("moment", this.waktu);
-      // console.log("moment", this.tanggalPesan);
-    },
-
-    async clockInterval() {
-      await setInterval(() => {
-        this.testMoment();
-        console.log("clockInterval");
-      }, 10000);
     },
   },
 };
@@ -382,9 +305,6 @@ export default {
 }
 
 ion-segment-button {
-  /* color: green; */
   --color: darkgrey;
-  /* --background-unchecked: darkgrey; */
-  /* --text-color: darkgrey */
 }
 </style>

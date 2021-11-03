@@ -48,6 +48,10 @@ const routes = [
         component: () => import('@/components/pages/retur/CreateRetur.vue'),
       },
       {
+        path: 'retur/details',
+        component: () => import('@/components/pages/retur/DetailRetur.vue'),
+      },
+      {
         path: 'toko',
         component: () => import('@/views/Tab3Toko.vue'),
       },

@@ -316,6 +316,7 @@ export default defineComponent({
     DashboardLoader,
     PerformancePageLoader,
   },
+
   mixins: [mixinFunct],
 
   data() {
@@ -338,6 +339,7 @@ export default defineComponent({
       persentaseTarget: 0,
     };
   },
+
   setup() {
     const router = useRouter();
     return {
@@ -350,41 +352,23 @@ export default defineComponent({
   },
 
   async ionViewWillEnter() {
-    // await this.getProfile()
     await this.presentLoading();
     if (!this.profileSales) {
       await this.getProfile();
-      // await this.getPerformanceToko();
-      // await this.getPerformanceOrder();
-      // await this.getPerformanceRetur();
-      // await this.getPerformanceBarang();
       await this.getPerformance();
-      // if (this.tokoSales && this.orderSales && this.returSales && this.barangSales) {
-      //   this.performanceSales = true
-      // }
     }
     if (!this.tanggal && !this.waktu) {
       await this.runMoment();
       await this.clockInterval();
     }
-    // console.log("lewat mana");
     await this.percentageCount();
-
     await this.discardLoading();
   },
-
-  // async ionViewDidEnter() {
-  //   // if (this.profileSales.targetPenjualan && this.orderSales.totalHargaPO) {
-  //     console.log("lewat");
-  //     this.percentageCount()
-  //   // }
-  // },
 
   methods: {
     async getProfile() {
       try {
         let vm = this;
-        // await vm.presentLoading();
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(ipConfig + "/users/profile", {
           headers: {
@@ -406,71 +390,18 @@ export default defineComponent({
             },
           }
         );
-        // console.log(vm.profileSales);
         if (vm.profileSales.wilayah.namaWilayah) {
           vm.wilayahSales = vm.profileSales.wilayah.namaWilayah;
         } else {
           vm.wilayahSales = "-";
         }
-        // await vm.discardLoading();
       } catch (err) {
         console.log(err, "errornya profile");
-        // await this.discardLoading();
       }
     },
-
-    // async getPerformanceToko() {
-    //   try {
-    //     // let vm = this;
-    //     const dataToken =await Storage.get({ key: "token" })
-    //     const reqToko = await axios.get( ipConfig + "/masterToko/listTokoBaruBySalesLogin", { headers: { token: dataToken.value }})
-    //     console.log(reqToko);
-
-    //   } catch (err) {
-    //     console.log(err, "err = toko");
-    //   }
-    // },
-    // async getPerformanceOrder() {
-    //   try {
-    //     // let vm = this;
-    //     const dataUserId = await Storage.get({ key: "idUser" });
-    //     const dataToken =await Storage.get({ key: "token" })
-    //     const reqOrder = await axios.get( ipConfig + "/masterPO/jumlahBySales/" + dataUserId.value, { headers: { token: dataToken.value }})
-    //     console.log(reqOrder);
-
-    //   } catch (err) {
-    //     console.log(err, "err = order");
-    //   }
-    // },
-    // async getPerformanceRetur() {
-    //   try {
-    //     // let vm = this;
-    //     const dataUserId = await Storage.get({ key: "idUser" });
-    //     const dataToken =await Storage.get({ key: "token" })
-    //     const reqRetur = await axios.get( ipConfig + "/retur/totalReturBySales/" + dataUserId.value, { headers: { token: dataToken.value }})
-    //     console.log(reqRetur);
-
-    //   } catch (err) {
-    //     console.log(err, "err = retur");
-    //   }
-    // },
-    // async getPerformanceBarang() {
-    //   try {
-    //     // let vm = this;
-    //     const dataUserId = await Storage.get({ key: "idUser" });
-    //     const dataToken =await Storage.get({ key: "token" })
-    //     const reqBarang = await axios.get( ipConfig + "/masterPO/totalJualBySales/" + dataUserId.value, { headers: { token: dataToken.value }})
-    //     console.log(reqBarang);
-
-    //   } catch (err) {
-    //     console.log(err, "err = barang");
-    //   }
-    // },
-
     async getPerformance() {
       try {
         let vm = this;
-        // await vm.presentLoading();
         const dataUserId = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
         const reqOne = await axios.get(
@@ -505,10 +436,10 @@ export default defineComponent({
             },
           }
         );
-
         const dataResult = await axios.all([reqOne, reqTwo, reqThree, reqFour]);
-        // console.log(dataResult, "hasil request");
+        console.log(dataResult);
         if (dataResult) {
+          // order
           vm.orderSales = dataResult[0].data;
           vm.totalHargaPOFormat = accounting.formatMoney(
             vm.orderSales.totalHargaPO,
@@ -524,74 +455,49 @@ export default defineComponent({
               },
             }
           );
-          // console.log(this.orderSales, "hasil order");
-
+          // barang
           vm.barangSales = dataResult[1].data.data;
           vm.barangSales.forEach((el) => {
             vm.jumlahTotalBarang += Number(el.totalBarang);
           });
-          // console.log(this.barangSales, "hasil barang");
-
+          //toko
           vm.tokoSales = dataResult[2].data.data;
-          // console.log(this.tokoSales, "hasil toko");
-
+          // retur
           vm.returSales = dataResult[3].data.data[0];
-          // console.log(this.returSales, "hasil retur");
-
           vm.performanceSales = true;
-          // await vm.discardLoading();
         } else {
           vm.performanceSales = false;
-          // await vm.discardLoading();
         }
       } catch (err) {
         console.log(err, "errornya performance");
-        // await this.discardLoading();
       }
     },
-
     async percentageCount() {
       let vm = this;
-      // console.log(vm.orderSales.totalHargaPO);
-      // console.log(vm.profileSales.targetPenjualan);
       vm.persentaseTarget =
         (await (Number(vm.orderSales.totalHargaPO) /
           Number(vm.profileSales.targetPenjualan))) * 100;
-      // console.log(vm.persentaseTarget, "%");
     },
-
     async runMoment() {
       this.hari = await moment().format("dddd");
       this.tanggal = await moment().format("LL");
       this.waktu = await moment().format("LT");
       console.log("moment", this.waktu);
     },
-
-    // async nextPage() {
-    //   this.$router.push("/tabs/order");
-    // },
-
     async clockInterval() {
       this.watchInterval = await setInterval(() => {
         this.runMoment();
         console.log("clockInterval");
       }, 10000);
     },
-
     async doRefresh(ev) {
       await this.getProfile();
       await this.getPerformance();
-      // await this.runMoment();
       await this.clockInterval();
       await setInterval(() => {
         ev.target.complete();
       }, 1000);
     },
-
-    async dropDownBarangSales() {
-      console.log("pencet");
-    },
-
     async signoutAlert() {
       const alert = await alertController.create({
         header: "Perhatian!",
@@ -611,7 +517,6 @@ export default defineComponent({
       });
       return alert.present();
     },
-
     async signout() {
       await this.presentLoading();
       await Storage.clear();

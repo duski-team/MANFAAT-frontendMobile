@@ -2,7 +2,7 @@
   <base-layout page-title="Tambah Toko" page-default-back-link="/tabs/toko">
     <template v-slot:actions-end>
       <ion-button
-        v-if="pilihWilayah.namaWilayah && namaToko && alamatToko"
+        v-if="pilihWilayah && namaToko && alamatToko"
         @click="saveToko"
       >
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
@@ -57,14 +57,9 @@
               <ion-select
                 placeholder="Pilih Wilayah"
                 interface="action-sheet"
-                v-model="pilihWilayah.namaWilayah"
-                @ionChange="pilih"
+                v-model="pilihWilayah.id"
               >
-                <ion-select-option
-                  v-for="(listWilayah, index) in listWilayah"
-                  :key="index"
-                  :value="listWilayah.namaWilayah"
-                >
+                <ion-select-option :value="listWilayah.id">
                   {{ listWilayah.namaWilayah }}
                 </ion-select-option>
               </ion-select>
@@ -137,6 +132,7 @@ export default defineComponent({
       alamatToko: "",
       noHpToko: "",
       noKTPToko: "",
+      note: "",
     };
   },
 
@@ -155,35 +151,32 @@ export default defineComponent({
         let vm = this;
         await vm.presentLoading();
 
+        const dataWilayah = await Storage.get({ key: "namaWilayah" })
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(ipConfig + "/wilayah/list", {
           headers: {
             token: dataToken.value,
           },
         });
-        // console.log(dataResult.data);
-        vm.listWilayah = dataResult.data.sort((a, b) =>
-          a.id > b.id ? 1 : b.id > a.id ? -1 : 0
-        );
+        dataResult.data.forEach(el => {
+          if (el.namaWilayah == dataWilayah.value) {
+            console.log(el);
+            vm.listWilayah = el
+          }
+        })
+        // vm.listWilayah = dataResult.data.sort((a, b) =>
+        //   a.id > b.id ? 1 : b.id > a.id ? -1 : 0
+        // );
         await vm.discardLoading();
       } catch (err) {
         console.log(err);
         await this.discardLoading();
       }
     },
-    pilih() {
-      console.log(this.pilihWilayah);
-    },
     async saveToko() {
       try {
         let vm = this;
         await vm.presentLoading();
-
-        vm.listWilayah.forEach((el) => {
-          if (vm.pilihWilayah.namaWilayah == el.namaWilayah) {
-            vm.pilihWilayah.id = el.id;
-          }
-        });
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
           ipConfig + "/masterToko/register",
@@ -200,38 +193,36 @@ export default defineComponent({
             },
           }
         );
-        console.log(dataResult.data);
-
-        await vm.discardLoading();
         let responseData = dataResult.data;
-        const toast = await toastController.create({
-          message: "Toko berhasil ditambahkan",
-          durations: 3500,
-          position: "top",
-        });
         if (responseData.message == "sukses") {
+          vm.note = "Toko Berhasil Ditambahkan";
           await vm.discardLoading();
-          await toast.present();
+          await vm.presentToast();
           await this.$router.push("/tabs/toko");
         } else {
           await vm.discardLoading();
-          toast.message = await responseData.message;
-          toast.durations = 5000;
-          await toast.present();
-          // await this.$router.push("/tabs/toko");
+          vm.note = await responseData.message;
+          await vm.presentToast();
         }
-        await toast.dismiss();
+        await toastController.dismiss();
       } catch (err) {
         console.log(err);
       }
     },
     async doRefresh(ev) {
-      // console.log(ev);
       await this.getWilayah();
 
       if (this.listWilayah) {
         ev.target.complete();
       }
+    },
+    async presentToast() {
+      const toast = await toastController.create({
+        message: this.note,
+        durations: 2500,
+        position: "top",
+      });
+      return await toast.present();
     },
   },
 });

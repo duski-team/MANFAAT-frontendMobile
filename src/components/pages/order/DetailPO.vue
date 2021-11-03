@@ -4,7 +4,7 @@
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <ion-grid v-if="!itemPO.length">
+    <ion-grid v-if="itemPO.length">
       <ion-row>
         <ion-col class="ion-padding">
           <ion-list>
@@ -50,33 +50,6 @@
                 </ion-list>
               </ion-card-content>
             </ion-card>
-            <!-- <ion-card v-if="!itemPO.length">
-              <ion-card-content class="ion-no-margin ion-no-padding">
-                <h2>loading...</h2>
-                <ion-list>
-                  <ion-item>
-
-                    <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-                    <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
-                    <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
-                    <ion-skeleton-text animated style="width: 20%"></ion-skeleton-text>
-                    <ion-skeleton-text animated></ion-skeleton-text>
-
-                    <ion-label>
-                      <h3>
-                        <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-                      </h3>
-                      <h2>
-                       <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
-                      </h2>
-                      <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
-                      <ion-skeleton-text animated style="width: 20%"></ion-skeleton-text>
-                      <ion-skeleton-text animated></ion-skeleton-text>
-                    </ion-label>
-                  </ion-item>
-                </ion-list>
-              </ion-card-content>
-            </ion-card> -->
           </ion-list>
         </ion-col>
       </ion-row>
@@ -118,42 +91,38 @@
             </ion-list-header>
             <ion-item lines="none" class="ion-text-start">
               <ion-label>
-                <h4>Nama Toko</h4>
-                <h2>{{ dataPO.namaToko }}</h2>
+                <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+                <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
               </ion-label>
             </ion-item>
             <ion-item lines="none">
               <ion-label>
-                <h4>Jumlah Pesanan</h4>
-                <h2>{{ dataPO.jumlahPesanan }}</h2>
+                <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+                <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
               </ion-label>
             </ion-item>
             <ion-item lines="none">
               <ion-label>
-                <h4>Tanggal Pesan</h4>
-                <h2>{{ dataPO.tanggalPesan }}</h2>
+                <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+                <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
               </ion-label>
             </ion-item>
 
             <ion-card>
               <ion-card-content class="ion-no-margin ion-no-padding">
                 <ion-list lines="none">
-                  <ion-item v-for="(itemPO, index) in itemPO" :key="index">
+                  <ion-item>
                     <ion-label>
-                      <h2>{{ itemPO.namaBarang }}</h2>
-                      <h3>Jumlah Barang - {{ itemPO.jumlahBarang }}</h3>
-                      <h4>Harga Barang Rp.{{ itemPO.hargaBarang }},00</h4>
+                      <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+                      <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+                      <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
                     </ion-label>
                   </ion-item>
                 </ion-list>
               </ion-card-content>
             </ion-card>
           </ion-list>
-          <h2>loading...</h2>
-          <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 20%"></ion-skeleton-text>
+          
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -208,13 +177,14 @@ export default {
     return { router };
   },
   async ionViewDidEnter() {
+    await this.presentLoading();
     await this.getDataPO();
+    await this.discardLoading();
   },
   methods: {
     async getDataPO() {
       try {
         let vm = this;
-        await vm.presentLoading();
         const noPO = await Storage.get({ key: "noPO" });
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(
@@ -228,16 +198,12 @@ export default {
 
         vm.dataPO = dataResult.data[0];
         vm.itemPO = dataResult.data;
-        await vm.discardLoading();
       } catch (err) {
         console.log(err, "catchnya jon");
-        await this.discardLoading();
       }
     },
     async doRefresh(ev) {
-      // console.log(ev);
       await this.getDataPO();
-
       if (this.dataPO) {
         ev.target.complete();
       }
@@ -253,7 +219,5 @@ ion-card {
 ion-skeleton-text {
   --background: var(--ion-color-primary);
   --background-rgb: var(--ion-color-primary-rgb);
-  /* --background: primary
-  var(--background-rgb) */
 }
 </style>
