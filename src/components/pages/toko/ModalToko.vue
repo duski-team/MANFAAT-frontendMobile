@@ -44,7 +44,7 @@
             <ion-item
               v-for="(dataToko, index) in dataToko"
               :key="index"
-              @click="detailToko(dataToko.id)"
+              @click="detailToko(dataToko.masterTokoId)"
               detail
             >
               <ion-label>
@@ -154,6 +154,7 @@ export default {
     },
     async detailToko(p) {
       await this.presentLoading();
+      console.log(p);
       await Storage.set({ key: "tokoId", value: p.toString() });
       await this.$router.push("/detailToko");
       await modalController.dismiss();

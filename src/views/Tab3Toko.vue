@@ -38,19 +38,27 @@
           <h2>{{ namaWilayah }}</h2>
         </ion-label>
       </ion-list-header>
-      <ion-item
-        v-for="(listToko, index) in listToko"
-        :key="index"
-        @click="detailToko(listToko.id)"
-        detail
-      >
+
+      <ion-item v-for="(elm, idx) in showToko" :key="idx" @click="detailToko(elm.id)" detail>
         <ion-label>
-          <h2>{{ listToko.namaToko }}</h2>
-          <h3>{{ listToko.alamatToko }}</h3>
-          <p>{{ listToko.namaWilayah }}</p>
+          <h2>{{ elm.namaToko }}</h2>
+          <h3>{{ elm.alamatToko }}</h3>
+          <p>{{ elm.namaWilayah }}</p>
         </ion-label>
       </ion-item>
+
+      <ion-item lines="none">
+        <ion-infinite-scroll
+          threshold="100px"
+          :disabled="showLoader"
+          id="infinite-scroll"
+          @ionInfinite="scrolling($event)"
+        >
+          <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more data..." />
+        </ion-infinite-scroll>
+      </ion-item>
     </ion-list>
+
     <ion-list v-else>
       <p>
         Loading...
@@ -83,6 +91,8 @@ import {
   IonFab,
   IonFabButton,
   modalController,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from "@ionic/vue";
 import { add, search } from "ionicons/icons";
 import { ipConfig } from "../config";
@@ -110,6 +120,8 @@ export default {
     IonRefresherContent,
     IonFab,
     IonFabButton,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
   },
 
   mixins: [mixinFunct],
@@ -119,16 +131,20 @@ export default {
       add,
       search,
       listToko: [],
+      showToko: [],
+      pageToko: 10,
       namaWilayah: "",
       idWilayah: "",
       hari: "",
       tanggal: "",
       waktu: "",
+      showLoader: false,
     };
   },
 
   setup() {
     const router = useRouter();
+
     return { router };
   },
 
@@ -144,17 +160,14 @@ export default {
 
         let vm = this;
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(
-          ipConfig + "/masterToko/listByUserLogin",
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
-        vm.listToko = dataResult.data.sort((a, b) =>
-          a.id > b.id ? 1 : b.id > a.id ? -1 : 0
-        );
+        const dataResult = await axios.get(ipConfig + "/masterToko/listByUserLogin", {
+          headers: {
+            token: dataToken.value,
+          },
+        });
+        vm.listToko = dataResult.data.sort((a, b) => (a.id > b.id ? -1 : b.id > a.id ? 1 : 0));
+        vm.pushToko();
+
         vm.namaWilayah = vm.listToko[0].namaWilayah;
         vm.idWilayah = vm.listToko[0].wilayahId;
         if (vm.listToko) {
@@ -166,7 +179,34 @@ export default {
       }
     },
 
+    async pushToko() {
+      let vm = this;
+      vm.showToko = vm.listToko.slice(0, vm.pageToko);
+      // console.log(vm.showToko);
+    },
+
+    async scrolling(e) {
+      try {
+        // console.log(e);
+        let vm = this;
+
+        if (vm.pageToko >= vm.listToko.length) {
+          e.target.disabled = true;
+        } else {
+          await setTimeout(function() {
+            vm.pageToko += 5;
+            vm.pushToko();
+            console.log("Done");
+            e.target.complete();
+          }, 750);
+        }
+      } catch (err) {
+        console.log("Error", err);
+      }
+    },
+
     async detailToko(p) {
+      console.log(p);
       await Storage.set({ key: "tokoId", value: p.toString() });
       await this.$router.push("/detailToko");
     },
@@ -194,9 +234,9 @@ export default {
     },
 
     async tambahToko() {
-      await Storage.set({ key: "namaWilayah", value: this.namaWilayah })
-      await this.$router.push("/tabs/toko/tambah")
-    }
+      await Storage.set({ key: "namaWilayah", value: this.namaWilayah });
+      await this.$router.push("/tabs/toko/tambah");
+    },
   },
 };
 </script>

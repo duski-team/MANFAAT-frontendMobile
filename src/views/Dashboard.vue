@@ -7,10 +7,7 @@
     </template>
 
     <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
-      <ion-refresher-content
-        :pulling-icon="chevronDownCircleOutline"
-        refreshing-spinner="null"
-      ></ion-refresher-content>
+      <ion-refresher-content :pulling-icon="chevronDownCircleOutline" refreshing-spinner="null"></ion-refresher-content>
     </ion-refresher>
 
     <ion-grid v-if="profileSales">
@@ -45,7 +42,7 @@
 
                     <ion-label class="ion-text-end ion-margin-end">
                       <h5>Wilayah</h5>
-                      <h2>{{ wilayahSales }}</h2>
+                      <h2 v-for="(elm, idx) in wilayahSales" :key="idx">{{ elm.namaWilayah }}</h2>
                     </ion-label>
                   </ion-list-header>
 
@@ -68,9 +65,7 @@
                               </ion-col>
                               <ion-col>
                                 <ion-label class="ion-text-end" readonly>
-                                  <h3>
-                                    {{ tokoSales.length }} - Toko Terdaftar
-                                  </h3>
+                                  <h3>{{ tokoSales.length }} - Toko Terdaftar</h3>
                                 </ion-label>
                               </ion-col>
                             </ion-row>
@@ -87,12 +82,8 @@
                               </ion-col>
                               <ion-col class="ion-text-end">
                                 <ion-label>
-                                  <h3>
-                                    {{ orderSales.jumlahPO }} - PO Terbuat
-                                  </h3>
-                                  <h3>
-                                    {{ totalHargaPOFormat }} - Total Nominal
-                                  </h3>
+                                  <h3>{{ orderSales.jumlahPO }} - PO Terbuat</h3>
+                                  <h3>{{ totalHargaPOFormat }} - Total Nominal</h3>
                                 </ion-label>
                               </ion-col>
                             </ion-row>
@@ -110,11 +101,7 @@
                               <ion-col class="ion-text-end">
                                 <ion-label>
                                   <h3>
-                                    {{
-                                      returSales.totalRetur
-                                        ? returSales.totalRetur
-                                        : "0"
-                                    }}
+                                    {{ returSales }}
                                     - Retur Terbuat
                                   </h3>
                                 </ion-label>
@@ -134,31 +121,13 @@
                               <ion-col v-if="jumlahTotalBarang">
                                 <ion-item lines="none" class="ion-text-end">
                                   <ion-label>
-                                    <h2>
-                                      {{ jumlahTotalBarang }} - Total Barang
-                                    </h2>
+                                    <h2>{{ jumlahTotalBarang }} - Total Barang</h2>
                                   </ion-label>
-                                  <ion-button
-                                    slot="end"
-                                    fill="clear"
-                                    v-if="dropDown"
-                                    @click="dropDown = false"
-                                  >
-                                    <ion-icon
-                                      slot="icon-only"
-                                      :icon="caretForwardOutline"
-                                    ></ion-icon>
+                                  <ion-button slot="end" fill="clear" v-if="dropDown" @click="dropDown = false">
+                                    <ion-icon slot="icon-only" :icon="caretForwardOutline"></ion-icon>
                                   </ion-button>
-                                  <ion-button
-                                    slot="end"
-                                    fill="clear"
-                                    v-else
-                                    @click="dropDown = true"
-                                  >
-                                    <ion-icon
-                                      slot="icon-only"
-                                      :icon="caretDownOutline"
-                                    ></ion-icon>
+                                  <ion-button slot="end" fill="clear" v-else @click="dropDown = true">
+                                    <ion-icon slot="icon-only" :icon="caretDownOutline"></ion-icon>
                                   </ion-button>
                                 </ion-item>
                               </ion-col>
@@ -184,19 +153,9 @@
                               </ion-item>
                             </ion-col>
                             <ion-col>
-                              <ion-item
-                                v-for="(barangSales, index) in barangSales"
-                                :key="index"
-                                lines="none"
-                              >
-                                <ion-label>{{
-                                  barangSales.namaBarang
-                                }}</ion-label>
-                                <ion-input
-                                  readonly
-                                  class="ion-text-end"
-                                  v-model="barangSales.totalBarang"
-                                ></ion-input>
+                              <ion-item v-for="(barangSales, index) in barangSales" :key="index" lines="none">
+                                <ion-label>{{ barangSales.namaBarang }}</ion-label>
+                                <ion-input readonly class="ion-text-end" v-model="barangSales.totalBarang"></ion-input>
                               </ion-item>
                             </ion-col>
                           </ion-row>
@@ -326,14 +285,14 @@ export default defineComponent({
       tanggal: "",
       waktu: "",
       profileSales: "",
-      wilayahSales: "",
+      wilayahSales: [],
       watchInterval: "",
       performanceSales: false,
-      orderSales: [],
+      orderSales: {},
       barangSales: [],
       jumlahTotalBarang: 0,
       tokoSales: [],
-      returSales: [],
+      returSales: "",
       totalHargaPOFormat: "",
       targetPenjualanFormat: "",
       persentaseTarget: 0,
@@ -359,7 +318,7 @@ export default defineComponent({
     }
     if (!this.tanggal && !this.waktu) {
       await this.runMoment();
-      await this.clockInterval();
+      // await this.clockInterval();
     }
     await this.percentageCount();
     await this.discardLoading();
@@ -375,7 +334,8 @@ export default defineComponent({
             token: dataToken.value,
           },
         });
-        vm.profileSales = dataResult.data.respon[0];
+        // console.log(dataResult.data[0]);
+        vm.profileSales = dataResult.data[0];
         vm.targetPenjualanFormat = accounting.formatMoney(
           vm.profileSales.targetPenjualan,
           {
@@ -390,8 +350,13 @@ export default defineComponent({
             },
           }
         );
-        if (vm.profileSales.wilayah.namaWilayah) {
-          vm.wilayahSales = vm.profileSales.wilayah.namaWilayah;
+        // console.log(vm.profileSales.wilayah);
+
+        if (vm.profileSales.wilayah.length > 0) {
+          vm.profileSales.wilayah.forEach(el => {
+            // console.log(el, "<<<<");
+            vm.wilayahSales.push(el)
+          });
         } else {
           vm.wilayahSales = "-";
         }
@@ -404,45 +369,47 @@ export default defineComponent({
         let vm = this;
         const dataUserId = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
-        const reqOne = await axios.get(
-          ipConfig + "/masterPO/jumlahBySales/" + dataUserId.value,
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
-        const reqTwo = axios.get(
-          ipConfig + "/masterPO/totalJualBySales/" + dataUserId.value,
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
-        const reqThree = axios.get(
-          ipConfig + "/masterToko/listTokoBaruBySalesLogin/",
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
-        const reqFour = axios.get(
-          ipConfig + "/retur/totalReturBySales/" + dataUserId.value,
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
-        const dataResult = await axios.all([reqOne, reqTwo, reqThree, reqFour]);
-        console.log(dataResult);
-        if (dataResult) {
+        const getDataPerfomance = await axios.get( ipConfig + "/mobile/performanceSales/" + dataUserId.value, { headers: { token: dataToken.value } })
+        // const reqOne = await axios.get(
+        //   ipConfig + "/masterPO/jumlahBySales/" + dataUserId.value,
+        //   {
+        //     headers: {
+        //       token: dataToken.value,
+        //     },
+        //   }
+        // );
+        // const reqTwo = axios.get(
+        //   ipConfig + "/masterPO/totalJualBySales/" + dataUserId.value,
+        //   {
+        //     headers: {
+        //       token: dataToken.value,
+        //     },
+        //   }
+        // );
+        // const reqThree = axios.get(
+        //   ipConfig + "/masterToko/listTokoBaruBySalesLogin/",
+        //   {
+        //     headers: {
+        //       token: dataToken.value,
+        //     },
+        //   }
+        // );
+        // const reqFour = axios.get(
+        //   ipConfig + "/retur/totalReturBySales/" + dataUserId.value,
+        //   {
+        //     headers: {
+        //       token: dataToken.value,
+        //     },
+        //   }
+        // );
+        // const dataResult = await axios.all([reqOne, reqTwo, reqThree, reqFour]);
+        // console.log(getDataPerfomance);
+        if (getDataPerfomance) {
           // order
-          vm.orderSales = dataResult[0].data;
+          vm.orderSales.jumlahPO = getDataPerfomance.data.jumlahPO;
+          vm.orderSales.totalHargaPO = getDataPerfomance.data.totalHargaPO;
           vm.totalHargaPOFormat = accounting.formatMoney(
-            vm.orderSales.totalHargaPO,
+            getDataPerfomance.data.totalHargaPO,
             {
               symbol: "Rp",
               precicsion: 2,
@@ -456,14 +423,14 @@ export default defineComponent({
             }
           );
           // barang
-          vm.barangSales = dataResult[1].data.data;
+          vm.barangSales = getDataPerfomance.data.totalBarang;
           vm.barangSales.forEach((el) => {
             vm.jumlahTotalBarang += Number(el.totalBarang);
           });
           //toko
-          vm.tokoSales = dataResult[2].data.data;
+          vm.tokoSales = getDataPerfomance.data.tokoBaru;
           // retur
-          vm.returSales = dataResult[3].data.data[0];
+          vm.returSales = getDataPerfomance.data.totalRetur;
           vm.performanceSales = true;
         } else {
           vm.performanceSales = false;
@@ -476,7 +443,7 @@ export default defineComponent({
       let vm = this;
       vm.persentaseTarget =
         (await (Number(vm.orderSales.totalHargaPO) /
-          Number(vm.profileSales.targetPenjualan))) * 100;
+          Number(vm.profileSales.targetPenjualan))).toFixed(2) * 100;
     },
     async runMoment() {
       this.hari = await moment().format("dddd");
@@ -484,16 +451,19 @@ export default defineComponent({
       this.waktu = await moment().format("LT");
       console.log("moment", this.waktu);
     },
-    async clockInterval() {
-      this.watchInterval = await setInterval(() => {
-        this.runMoment();
-        console.log("clockInterval");
-      }, 10000);
-    },
+    
+    // async clockInterval() {
+    //   console.log("a");
+      // this.watchInterval = await setInterval(() => {
+      //   this.runMoment();
+      //   console.log("clockInterval");
+      // }, 10000);
+    // },
+
     async doRefresh(ev) {
       await this.getProfile();
       await this.getPerformance();
-      await this.clockInterval();
+      // await this.clockInterval();
       await setInterval(() => {
         ev.target.complete();
       }, 1000);

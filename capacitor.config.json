@@ -2,10 +2,5 @@
 	"appId": "io.ionic.starter",
 	"appName": "MANFAAT-mobile",
 	"webDir": "dist",
-	"server": {
-		"url": "http://192.168.123.12:8100",
-		"cleartext": true
-	  },
 	"bundledWebRuntime": false
-
 }

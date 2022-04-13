@@ -59,7 +59,22 @@
               <ion-label class="ion-text-start" position="fixed">
                 Wilayah
               </ion-label>
-              <ion-input v-model="wilayahId"></ion-input>
+              <ion-input v-model="namaWilayah"></ion-input>
+            </ion-item>
+          </ion-list>
+
+          <ion-list>
+            <ion-item>
+              <ion-label>Nama Barang</ion-label>
+              <ion-label>Harga 1</ion-label>
+              <ion-label>Harga 2</ion-label>
+              <ion-label>Harga 3</ion-label>
+            </ion-item>
+            <ion-item v-for="(el, id) in hargaToko" :key="id">
+              <ion-label>{{ el.namaBarang }}</ion-label>
+              <ion-input v-model="el.harga"></ion-input>
+              <ion-input v-model="el.harga2"></ion-input>
+              <ion-input v-model="el.harga3"></ion-input>
             </ion-item>
           </ion-list>
           <ion-item lines="none">
@@ -144,13 +159,13 @@ export default {
   mixins: [mixinFunct],
   data() {
     return {
-      dataToko: [],
+      hargaToko: [],
       namaToko: "",
       fotoToko: "",
       alamatToko: "",
       noHpToko: "",
       noKTPToko: "",
-      wilayahId: "",
+      namaWilayah: "",
       previewPhoto: "",
       sendPhoto: "",
       note: "",
@@ -179,15 +194,16 @@ export default {
             },
           }
         );
+        console.log("resultnya", dataResult)  ;
         // console.log("resultnya", JSON.stringify(dataResult))  ;
         vm.namaToko = dataResult.data[0][0].namaToko;
         vm.alamatToko = dataResult.data[0][0].alamatToko;
         vm.noHpToko = dataResult.data[0][0].noHpToko;
         vm.noKTPToko = dataResult.data[0][0].noKTPToko;
-        vm.wilayahId = dataResult.data[0][0].wilayahId;
+        vm.namaWilayah = dataResult.data[0][0].namaWilayah;
         vm.fotoToko = dataResult.data[0][0].fotoToko;
-        vm.dataToko = dataResult.data;
-        // console.log(vm.dataToko, "<<<");
+        vm.hargaToko = dataResult.data[1];
+        console.log(vm.hargaToko, "<<<");
         await vm.discardLoading();
       } catch (err) {
         console.log(err, "catchnya jon");

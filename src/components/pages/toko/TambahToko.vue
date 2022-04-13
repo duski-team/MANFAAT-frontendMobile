@@ -2,7 +2,7 @@
   <base-layout page-title="Tambah Toko" page-default-back-link="/tabs/toko">
     <template v-slot:actions-end>
       <ion-button
-        v-if="pilihWilayah && namaToko && alamatToko"
+        v-if="daftarToko.wilayahId && daftarToko.namaToko && daftarToko.alamatToko"
         @click="saveToko"
       >
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
@@ -23,7 +23,7 @@
             <ion-item>
               <ion-label position="floating">Nama Toko</ion-label>
               <ion-input
-                v-model="namaToko"
+                v-model="daftarToko.namaToko"
                 placeholder="Silahkan Isi Nama Toko"
                 required
               ></ion-input>
@@ -31,7 +31,7 @@
             <ion-item>
               <ion-label position="floating">Alamat Toko</ion-label>
               <ion-input
-                v-model="alamatToko"
+                v-model="daftarToko.alamatToko"
                 placeholder="Silahkan Isi Alamat Toko"
                 required
               ></ion-input>
@@ -39,7 +39,7 @@
             <ion-item>
               <ion-label position="floating">No. Handphone</ion-label>
               <ion-input
-                v-model="noHpToko"
+                v-model="daftarToko.noHpToko"
                 placeholder="Silahkan Isi No. Handphone"
                 type="number"
               ></ion-input>
@@ -47,7 +47,7 @@
             <ion-item>
               <ion-label position="floating">No. KTP</ion-label>
               <ion-input
-                v-model="noKTPToko"
+                v-model="daftarToko.noKTPToko"
                 placeholder="Silahkan Isi No. KTP"
                 type="number"
               ></ion-input>
@@ -57,7 +57,7 @@
               <ion-select
                 placeholder="Pilih Wilayah"
                 interface="action-sheet"
-                v-model="pilihWilayah.id"
+                v-model="daftarToko.wilayahId"
               >
                 <ion-select-option :value="listWilayah.id">
                   {{ listWilayah.namaWilayah }}
@@ -128,10 +128,13 @@ export default defineComponent({
       save,
       listWilayah: [],
       pilihWilayah: {},
-      namaToko: "",
-      alamatToko: "",
-      noHpToko: "",
-      noKTPToko: "",
+      daftarToko: {
+        namaToko: "",
+        alamatToko: "",
+        noHpToko: "",
+        noKTPToko: "",
+        wilayahId: "",
+      },
       note: "",
     };
   },
@@ -152,15 +155,17 @@ export default defineComponent({
         await vm.presentLoading();
 
         const dataWilayah = await Storage.get({ key: "namaWilayah" })
+        const wilayah = await Storage.get({ key: "wilayah" })
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.get(ipConfig + "/wilayah/list", {
           headers: {
             token: dataToken.value,
           },
         });
+        console.log(wilayah);
         dataResult.data.forEach(el => {
           if (el.namaWilayah == dataWilayah.value) {
-            console.log(el);
+            // console.log(el);
             vm.listWilayah = el
           }
         })
@@ -181,11 +186,11 @@ export default defineComponent({
         const dataResult = await axios.post(
           ipConfig + "/masterToko/register",
           {
-            namaToko: vm.namaToko,
-            alamatToko: vm.alamatToko,
-            noHpToko: vm.noHpToko,
-            noKTPToko: vm.noKTPToko,
-            wilayahId: vm.pilihWilayah.id,
+            namaToko: vm.daftarToko.namaToko,
+            alamatToko: vm.daftarToko.alamatToko,
+            noHpToko: vm.daftarToko.noHpToko,
+            noKTPToko: vm.daftarToko.noKTPToko,
+            wilayahId: vm.daftarToko.wilayahId,
           },
           {
             headers: {
@@ -195,6 +200,7 @@ export default defineComponent({
         );
         let responseData = dataResult.data;
         if (responseData.message == "sukses") {
+          vm.daftarToko = {}
           vm.note = "Toko Berhasil Ditambahkan";
           await vm.discardLoading();
           await vm.presentToast();

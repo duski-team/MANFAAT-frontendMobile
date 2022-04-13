@@ -268,7 +268,7 @@ export default {
         );
         // console.log("resultnya", JSON.stringify(dataResult))  ;
         // console.log("resultnya", dataResult)  ;
-        vm.dataToko = dataResult.data[0][0];
+        vm.dataToko = await dataResult.data[0][0];
         // vm.noPO = Math.floor(Math.random() * 10000000)
         vm.noPO = moment().format("YYMMDD.ddHHmmss");
 

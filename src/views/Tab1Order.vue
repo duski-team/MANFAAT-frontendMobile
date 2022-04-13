@@ -199,6 +199,9 @@ export default {
       if (this.selectedSegment == 2) {
         this.presentLoading();
         this.dataPO();
+      } else if (this.selectedSegment == 1) {
+        this.presentLoading()
+        this.dataToko()
       }
       this.discardLoading();
     },
