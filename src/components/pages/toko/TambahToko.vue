@@ -1,10 +1,7 @@
 <template>
   <base-layout page-title="Tambah Toko" page-default-back-link="/tabs/toko">
     <template v-slot:actions-end>
-      <ion-button
-        v-if="daftarToko.wilayahId && daftarToko.namaToko && daftarToko.alamatToko"
-        @click="saveToko"
-      >
+      <ion-button v-if="daftarToko.wilayahId && daftarToko.namaToko && daftarToko.alamatToko" @click="saveToko">
         <ion-icon slot="icon-only" :icon="save"></ion-icon>
       </ion-button>
       <ion-button v-else disabled>
@@ -22,19 +19,11 @@
           <ion-list>
             <ion-item>
               <ion-label position="floating">Nama Toko</ion-label>
-              <ion-input
-                v-model="daftarToko.namaToko"
-                placeholder="Silahkan Isi Nama Toko"
-                required
-              ></ion-input>
+              <ion-input v-model="daftarToko.namaToko" placeholder="Silahkan Isi Nama Toko" required></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="floating">Alamat Toko</ion-label>
-              <ion-input
-                v-model="daftarToko.alamatToko"
-                placeholder="Silahkan Isi Alamat Toko"
-                required
-              ></ion-input>
+              <ion-input v-model="daftarToko.alamatToko" placeholder="Silahkan Isi Alamat Toko" required></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="floating">No. Handphone</ion-label>
@@ -46,21 +35,13 @@
             </ion-item>
             <ion-item>
               <ion-label position="floating">No. KTP</ion-label>
-              <ion-input
-                v-model="daftarToko.noKTPToko"
-                placeholder="Silahkan Isi No. KTP"
-                type="number"
-              ></ion-input>
+              <ion-input v-model="daftarToko.noKTPToko" placeholder="Silahkan Isi No. KTP" type="number"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label position="floating">Wilayah</ion-label>
-              <ion-select
-                placeholder="Pilih Wilayah"
-                interface="action-sheet"
-                v-model="daftarToko.wilayahId"
-              >
-                <ion-select-option :value="listWilayah.id">
-                  {{ listWilayah.namaWilayah }}
+              <ion-select placeholder="Pilih Wilayah" interface="action-sheet" v-model="daftarToko.wilayahId">
+                <ion-select-option v-for="elm in listWilayah" :key="elm.id" :value="elm.id">
+                  {{ elm.namaWilayah }}
                 </ion-select-option>
               </ion-select>
             </ion-item>
@@ -154,21 +135,32 @@ export default defineComponent({
         let vm = this;
         await vm.presentLoading();
 
-        const dataWilayah = await Storage.get({ key: "namaWilayah" })
-        const wilayah = await Storage.get({ key: "wilayah" })
+        // const dataWilayah = await Storage.get({ key: "namaWilayah" });
+        // const wilayah = await Storage.get({ key: "wilayah" });
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(ipConfig + "/wilayah/list", {
+        const idUser = await Storage.get({ key: "idUser" });
+        // const dataResult = await axios.get(ipConfig + "/wilayah/list", {
+        //   headers: {
+        //     token: dataToken.value,
+        //   },
+        // });
+
+        console.log(idUser.value);
+        const dataResult = await axios.get(ipConfig + "/poolWilayah/listBySalesId/" + `${idUser.value}`, {
           headers: {
             token: dataToken.value,
           },
         });
-        console.log(wilayah);
-        dataResult.data.forEach(el => {
-          if (el.namaWilayah == dataWilayah.value) {
+        // console.log(wilayah);
+        console.log(dataResult.data.data[0], "<<<<<");
+        let dataWilayah = dataResult.data.data[0]
+        dataWilayah.forEach((el) => {
+          // if (el.namaWilayah == dataWilayah.value) {
             // console.log(el);
-            vm.listWilayah = el
-          }
-        })
+            vm.listWilayah.push(el);
+          // }
+        });
+        console.log(vm.listWilayah);
         // vm.listWilayah = dataResult.data.sort((a, b) =>
         //   a.id > b.id ? 1 : b.id > a.id ? -1 : 0
         // );
@@ -196,11 +188,12 @@ export default defineComponent({
             headers: {
               token: dataToken.value,
             },
-          }
+          },
         );
         let responseData = dataResult.data;
         if (responseData.message == "sukses") {
-          vm.daftarToko = {}
+          vm.daftarToko = {};
+          vm.listWilayah = []
           vm.note = "Toko Berhasil Ditambahkan";
           await vm.discardLoading();
           await vm.presentToast();

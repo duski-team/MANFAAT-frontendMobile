@@ -29,10 +29,7 @@
         </ion-label>
       </ion-list-header>
 
-      <ion-segment
-        v-model="selectedSegment"
-        @ionChange="segmentChanged($event)"
-      >
+      <ion-segment v-model="selectedSegment" @ionChange="segmentChanged($event)">
         <ion-segment-button value="1">Buat PO</ion-segment-button>
         <ion-segment-button value="2">List PO</ion-segment-button>
       </ion-segment>
@@ -43,11 +40,7 @@
             <ion-row>
               <ion-col size="12">
                 <ion-list>
-                  <ion-searchbar
-                    type="text"
-                    debounce="500"
-                    @ionChange="searchToko($event)"
-                  ></ion-searchbar>
+                  <ion-searchbar type="text" debounce="500" @ionChange="searchToko($event)"></ion-searchbar>
 
                   <ion-list v-if="isItemAvailable">
                     <ion-item
@@ -65,19 +58,25 @@
                   </ion-list>
                   <ion-list v-else>
                     <ion-item
-                      v-for="(listToko, index) in listToko"
-                      :key="index"
-                      @click="openDetailPO(listToko.id)"
+                      v-for="(elm, idx) in list_toko_mobile"
+                      :key="idx"
+                      @click="openDetailPO(elm.id)"
                       lines="full"
                       detail
                     >
-                      <ion-note slot="start">{{ index + 1 }}</ion-note>
+                      <ion-note slot="start">{{ idx + 1 }}</ion-note>
                       <ion-label>
-                        <h2>{{ listToko.namaToko }}</h2>
-                        <p>{{ listToko.namaWilayah }}</p>
+                        <h2>{{ elm.namaToko }}</h2>
+                        <p>{{ elm.namaWilayah }}</p>
                       </ion-label>
                     </ion-item>
                   </ion-list>
+                  <ion-button @click="testTambahData">
+                    Pencet
+                  </ion-button>
+                  <ion-button @click="testCariToko">
+                    Toko
+                  </ion-button>
                 </ion-list>
               </ion-col>
             </ion-row>
@@ -129,6 +128,7 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonNote,
+  IonButton,
 } from "@ionic/vue";
 import { useRouter } from "vue-router";
 import { Storage } from "@capacitor/storage";
@@ -137,6 +137,7 @@ import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
 import mixinFunct from "../mixins/mixinFunct";
+// import { ref } from "vue";
 
 export default {
   name: "Purchase Order",
@@ -156,12 +157,14 @@ export default {
     IonRefresher,
     IonRefresherContent,
     IonNote,
+    IonButton,
   },
 
   mixins: [mixinFunct],
 
   data() {
     return {
+      list_toko_mobile: [],
       listToko: [],
       listPO: [],
       isItemAvailable: false,
@@ -180,13 +183,53 @@ export default {
       initialSlide: 0,
       speed: 500,
     };
-    return { router, slideOptions };
+    // let data_token = ref([]);
+    // let wilayah_id = ref([]);
+    // const list_toko_mobile = ref([]);
+
+    // function get_storage() {
+    //   let token = Storage.get({ key: "token" });
+    //   let wilayahId = Storage.get({ key: "wilayahId" });
+    //   data_token.value.push(token)
+    //   wilayah_id.value.push(wilayahId)
+    // }
+
+    // function get_data_toko() {
+    // let data_token = Storage.get({ key: "token" });
+    // let wilayah_id = Storage.get({ key: "wilayahId" });
+    // console.log(data_token);
+    // axios.post(
+    //   ipConfig + "/mobile/listTokoBySalesMobile",
+    //   {
+    //     halaman: 1,
+    // wilayahId: wilayah_id,
+    //     },
+    //     {
+    //       headers: {
+    //         token: data_token.value,
+    //       },
+    //     },
+    //   );
+    // }
+
+    // get_data_toko();
+    // get_storage();
+    // console.log(data_token.value, "<<<<<<");
+
+    return {
+      router,
+      slideOptions,
+      // list_toko_mobile,
+      // data_token,
+      // wilayah_id
+    };
   },
 
   async ionViewWillEnter() {
     this.presentLoading();
     if (!this.listToko.length) {
       await this.dataToko();
+      await this.get_data_toko();
     }
     if (!this.tanggal && !this.waktu) {
       await this.testMoment();
@@ -200,29 +243,71 @@ export default {
         this.presentLoading();
         this.dataPO();
       } else if (this.selectedSegment == 1) {
-        this.presentLoading()
-        this.dataToko()
+        this.presentLoading();
+        this.dataToko();
       }
       this.discardLoading();
     },
   },
 
   methods: {
-    async dataToko() {
+    async testTambahData() {
+      let a = 2
+      await this.get_data_toko(a)
+    },
+    async testCariToko() {
+      let a = 1
+      let b = 12
+      await this.get_data_toko(a, b)
+    },
+    async get_data_toko(a, b, c) {
       try {
         let vm = this;
+        let halaman = a ? a : 1
+        let tokonya = b
+        let wilayahId = c
+
+        let kirim = { halaman }
+        if (tokonya) {
+          kirim.namaToko = tokonya
+        }
+        if (wilayahId) {
+          kirim.wilayahId = wilayahId
+        }
+        console.log(kirim, "kirimannya");
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(
-          ipConfig + "/masterToko/listByUserLogin",
+        // console.log(dataToken);
+        // const wilayahId = Storage.get({ key: "wilayahId" });
+        const dataResult = await axios.post(ipConfig + "/mobile/listTokoBySalesMobile",
+          
+            kirim,
+          
           {
             headers: {
               token: dataToken.value,
             },
-          }
+          },
         );
-        vm.listToko = dataResult.data.sort((a, b) =>
-          a.id > b.id ? 1 : b.id > a.id ? -1 : 0
-        );
+        // console.log(dataResult.data.data);
+        dataResult.data.data.forEach(el => {
+          vm.list_toko_mobile.push(el)
+        });
+        // vm.list_toko_mobile.push(dataResult.data.data);
+        console.log(vm.list_toko_mobile);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    async dataToko() {
+      try {
+        let vm = this;
+        const dataToken = await Storage.get({ key: "token" });
+        const dataResult = await axios.get(ipConfig + "/masterToko/listByUserLogin", {
+          headers: {
+            token: dataToken.value,
+          },
+        });
+        vm.listToko = dataResult.data.sort((a, b) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0));
       } catch (err) {
         console.log(err, "errornya datatoko");
       }
@@ -231,27 +316,22 @@ export default {
       try {
         let vm = this;
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(
-          ipConfig + "/masterPO/listByUserLogin",
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
+        const dataResult = await axios.get(ipConfig + "/masterPO/listByUserLogin", {
+          headers: {
+            token: dataToken.value,
+          },
+        });
         let hasil = dataResult.data.data;
         hasil.forEach((el) => {
           el.tanggalPesan = moment(el.tanggalPesan).format("dddd, L");
         });
-        vm.listPO = await hasil.sort((a, b) =>
-          a.id > b.id ? 1 : b.id > a.id ? -1 : 0
-        );
+        vm.listPO = await hasil.sort((a, b) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0));
       } catch (err) {
         console.log(err, "errornya dataPO");
       }
     },
     initializeItems() {
-      this.items = this.listToko;
+      this.items = this.list_toko_mobile;
     },
     async openDetailPO(paramsnya) {
       await Storage.set({ key: "tokoId", value: paramsnya.toString() });
@@ -275,7 +355,7 @@ export default {
       }
     },
     async doRefresh(ev) {
-      await this.clockInterval();
+      // await this.clockInterval();
       await this.dataPO();
       await this.dataToko();
 

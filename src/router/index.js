@@ -21,7 +21,7 @@ const routes = [
   {
     path: '/tabs/',
     component: Tabs,
-    meta: { requiredAuth: true },
+    // meta: { requiredAuth: true },
     children: [
       {
         path: '',

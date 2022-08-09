@@ -334,7 +334,7 @@ export default defineComponent({
             token: dataToken.value,
           },
         });
-        // console.log(dataResult.data[0]);
+        console.log(dataResult.data[0]);
         vm.profileSales = dataResult.data[0];
         vm.targetPenjualanFormat = accounting.formatMoney(
           vm.profileSales.targetPenjualan,
@@ -353,9 +353,23 @@ export default defineComponent({
         // console.log(vm.profileSales.wilayah);
 
         if (vm.profileSales.wilayah.length > 0) {
-          vm.profileSales.wilayah.forEach(el => {
+          
+          let dataWilayahId = ""
+          vm.profileSales.wilayah.forEach((el, id) => {
             // console.log(el, "<<<<");
             vm.wilayahSales.push(el)
+            if (id == vm.profileSales.wilayah.length - 1) {
+              dataWilayahId += el.wilayahId
+            }
+            else {
+              dataWilayahId += el.wilayahId
+              dataWilayahId += ", "
+            }
+          });
+
+          Storage.set({
+            key: "wilayahId",
+            value: dataWilayahId,
           });
         } else {
           vm.wilayahSales = "-";
