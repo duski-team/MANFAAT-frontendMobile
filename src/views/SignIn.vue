@@ -150,6 +150,7 @@ export default {
         }
       } catch (err) {
         console.log("errorHandler", err);
+        console.log(JSON.stringify(err));
         this.note = "Gangguan Jaringan";
         await this.discardLoading();
         await this.presentAlert();

@@ -36,6 +36,15 @@
               </ion-select>
             </ion-item>
 
+            <ion-item v-if="pilihBarang.namaBarang">
+              <ion-label>Harga Satuan</ion-label>
+              <ion-input readonly class="ion-text-right" :value="computedHarga.harga" style="padding-right: 5px;"></ion-input>
+            </ion-item>
+            <ion-item v-else>
+              <ion-label>Harga Satuan</ion-label>
+              <ion-input readonly class="ion-text-right" value="-"></ion-input>
+            </ion-item>
+
             <ion-item>
               <ion-label>Jumlah Barang</ion-label>
               <ion-input
@@ -45,6 +54,16 @@
                 type="number"
               ></ion-input>
             </ion-item>
+
+            <ion-item v-if="pilihBarang.jumlahBarang">
+              <ion-label>Harga Satuan</ion-label>
+              <ion-input readonly class="ion-text-right" :value="computedHarga.totalHarga" style="padding-right: 5px;"></ion-input>
+            </ion-item>
+            <ion-item v-else>
+              <ion-label>Harga Satuan</ion-label>
+              <ion-input readonly class="ion-text-right" value="-"></ion-input>
+            </ion-item>
+
             <ion-item lines="none" class="ion-no-margin">
               <ion-grid>
                 <ion-row>
@@ -137,8 +156,8 @@ export default {
     // await this.getAkun();
     await this.getToko();
   },
-  methods: {
-    simpanBarang() {
+  computed: {
+    computedHarga() {
       this.listBarang.forEach((el) => {
         if (this.pilihBarang.namaBarang == el.namaBarang) {
           this.pilihBarang.hargatokoid = el.hargatokoid;
@@ -150,6 +169,11 @@ export default {
             el.harga * Number(this.pilihBarang.jumlahBarang);
         }
       });
+      return this.pilihBarang
+    }
+  },
+  methods: {
+    simpanBarang() {
       modalController.dismiss(
         {
           dataBarang: this.pilihBarang,

@@ -341,7 +341,7 @@ export default {
         const idUser = await Storage.get({ key: "idUser" });
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
-          ipConfig + "/transaksi/screeningPO",
+          ipConfig + "/mobile/screeningPO",
           {
             noPO: vm.noPO,
             masterTokoId: idToko.value,

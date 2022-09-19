@@ -37,7 +37,7 @@
                   <ion-list-header>
                     <ion-label>
                       <h4>Sugeng Rawuh,</h4>
-                      <h1>{{ profileSales.username }}</h1>
+                      <h1><b>{{ (profileSales.username).toUpperCase() }}</b></h1>
                     </ion-label>
 
                     <ion-label class="ion-text-end ion-margin-end">
@@ -151,13 +151,17 @@
                                   <p>List Barang</p>
                                 </ion-label>
                               </ion-item>
-                            </ion-col>
-                            <ion-col>
-                              <ion-item v-for="(barangSales, index) in barangSales" :key="index" lines="none">
+                              <ion-item v-for="(barangSales, index) in barangSales" :key="index">
                                 <ion-label>{{ barangSales.namaBarang }}</ion-label>
                                 <ion-input readonly class="ion-text-end" v-model="barangSales.totalBarang"></ion-input>
                               </ion-item>
                             </ion-col>
+                            <!-- <ion-col style="background-color: red;">
+                              <ion-item v-for="(barangSales, index) in barangSales" :key="index" lines="none">
+                                <ion-label>{{ barangSales.namaBarang }}</ion-label>
+                                <ion-input readonly class="ion-text-end" v-model="barangSales.totalBarang"></ion-input>
+                              </ion-item>
+                            </ion-col> -->
                           </ion-row>
                         </ion-grid>
                         <ion-grid v-else>

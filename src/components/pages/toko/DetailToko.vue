@@ -4,6 +4,13 @@
     page-default-back-link="/tabs/toko"
     screen-content="true"
   >
+    <template v-slot:actions-end>
+      <!-- <ion-button router-link="/tabs/toko/tambah/"> -->
+      <ion-button @click="saveToko">
+        <ion-icon slot="icon-only" :icon="save"></ion-icon>
+      </ion-button>
+    </template>
+
     <ion-refresher
       slot="fixed"
       pull-factor="0.5"
@@ -21,18 +28,19 @@
       <ion-row>
         <ion-col class="ion-padding">
           <ion-list>
-            <ion-item v-if="fotoToko" lines="none">
-              <ion-thumbnail>
-                <ion-img :src="fotoToko"></ion-img>
-              </ion-thumbnail>
+            <ion-item class="imageContainer" v-if="fotoToko" lines="none">
+              <!-- <ion-thumbnail> -->
+                <ion-img class="marginContainer" :src="fotoToko"></ion-img>
+              <!-- </ion-thumbnail> -->
+              <!-- <span>{{ fotoToko }}</span> -->
             </ion-item>
             <ion-item v-else lines="none">
-              <ion-thumbnail>
+              <ion-thumbnail class="ion-text-center">
                 <ion-icon size="large" :icon="person"></ion-icon>
               </ion-thumbnail>
             </ion-item>
             <ion-item>
-              <ion-label class="ion-text-start" position="stacked">
+              <ion-label class="ion-text-start" position="fixed">
                 Nama Toko
               </ion-label>
               <ion-input v-model="namaToko"></ion-input>
@@ -61,23 +69,47 @@
               </ion-label>
               <ion-input v-model="namaWilayah"></ion-input>
             </ion-item>
+            <ion-item>
+              <ion-label class="ion-text-start" position="fixed">
+                Longitude
+              </ion-label>
+              <ion-input disabled v-model="long"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label class="ion-text-start" position="fixed">
+                Latitude
+              </ion-label>
+              <ion-input disabled v-model="lat"></ion-input>
+            </ion-item>
           </ion-list>
 
           <ion-list>
-            <ion-item>
-              <ion-label>Nama Barang</ion-label>
-              <ion-label>Harga 1</ion-label>
-              <ion-label>Harga 2</ion-label>
-              <ion-label>Harga 3</ion-label>
-            </ion-item>
-            <ion-item v-for="(el, id) in hargaToko" :key="id">
-              <ion-label>{{ el.namaBarang }}</ion-label>
-              <ion-input v-model="el.harga"></ion-input>
-              <ion-input v-model="el.harga2"></ion-input>
-              <ion-input v-model="el.harga3"></ion-input>
-            </ion-item>
+            <ion-card>
+              <!-- <ion-card-header>
+               <ion-card-subtitle>List Harga Barang</ion-card-subtitle>
+              </ion-card-header> -->
+              <!-- <ion-card-content> -->
+              <ion-item lines="none">
+                <ion-label>
+                  <h5>List Harga Barang</h5>
+                </ion-label>
+              </ion-item>
+              <ion-item v-for="(el, id) in hargaToko" :key="id" detail @click="editHargaBarang(el)">
+                <ion-label>
+                  <h2>{{ el.namaBarang }}</h2>
+                  <p>Harga 1: {{ el.harga }} (0 - 10)</p>
+                  <p>Harga 2: {{ el.harga2 }} (11 - 99)</p>
+                  <p>Harga 3: {{ el.harga3 }} (> 99)</p>
+                </ion-label>
+                <!-- <ion-label class="ion-text-start">{{ el.namaBarang }}</ion-label>
+                <ion-input class="ion-text-end" v-model="el.harga"></ion-input>
+                <ion-input class="ion-text-end" v-model="el.harga2"></ion-input>
+                <ion-input class="ion-text-end" v-model="el.harga3"></ion-input> -->
+              </ion-item>
+              <!-- </ion-card-content> -->
+            </ion-card>
           </ion-list>
-          <ion-item lines="none">
+          <!-- <ion-item lines="none">
             <ion-grid>
               <ion-row>
                 <ion-col>
@@ -92,7 +124,7 @@
                 </ion-col>
               </ion-row>
             </ion-grid>
-          </ion-item>
+          </ion-item> -->
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -115,6 +147,10 @@ import {
   IonList,
   IonLabel,
   IonItem,
+  IonCard,
+  // IonCardHeader,
+  // IonCardSubtitle,
+  // IonCardContent,
   IonInput,
   IonImg,
   IonButton,
@@ -130,9 +166,9 @@ import {
 import { ipConfig } from "@/config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
-import { chevronDownCircleOutline, camera, person } from "ionicons/icons";
+import { chevronDownCircleOutline, camera, person, save } from "ionicons/icons";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
-import modalFoto from "@/components/pages/dashboard/ModalPhoto.vue";
+import modalHargaBarang from "@/components/pages/toko/ModalHargaBarang.vue";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
@@ -146,6 +182,10 @@ export default {
     IonList,
     IonLabel,
     IonItem,
+    IonCard,
+    // IonCardContent,
+    // IonCardHeader,
+    // IonCardSubtitle,
     IonInput,
     IonImg,
     IonButton,
@@ -166,6 +206,9 @@ export default {
       noHpToko: "",
       noKTPToko: "",
       namaWilayah: "",
+      wilayahId: "",
+      long: "",
+      lat: "",
       previewPhoto: "",
       sendPhoto: "",
       note: "",
@@ -173,7 +216,7 @@ export default {
   },
   setup() {
     const router = useRouter();
-    return { router, chevronDownCircleOutline, camera, person };
+    return { router, chevronDownCircleOutline, camera, person, save };
   },
   async ionViewDidEnter() {
     await this.getToko();
@@ -195,14 +238,18 @@ export default {
           }
         );
         console.log("resultnya", dataResult)  ;
+        let x = dataResult.data
         // console.log("resultnya", JSON.stringify(dataResult))  ;
-        vm.namaToko = dataResult.data[0][0].namaToko;
-        vm.alamatToko = dataResult.data[0][0].alamatToko;
-        vm.noHpToko = dataResult.data[0][0].noHpToko;
-        vm.noKTPToko = dataResult.data[0][0].noKTPToko;
-        vm.namaWilayah = dataResult.data[0][0].namaWilayah;
-        vm.fotoToko = dataResult.data[0][0].fotoToko;
-        vm.hargaToko = dataResult.data[1];
+        vm.namaToko = x[0][0].namaToko;
+        vm.alamatToko = x[0][0].alamatToko;
+        vm.noHpToko = x[0][0].noHpToko;
+        vm.noKTPToko = x[0][0].noKTPToko;
+        vm.namaWilayah = x[0][0].namaWilayah;
+        vm.wilayahId = x[0][0].wilayahId;
+        vm.long = x[0][0].long;
+        vm.lat = x[0][0].lat;
+        vm.fotoToko = x[0][0].fotoToko ? `${ipConfig}/${x[0][0].fotoToko}` : null;
+        vm.hargaToko = x[1];
         console.log(vm.hargaToko, "<<<");
         await vm.discardLoading();
       } catch (err) {
@@ -212,30 +259,34 @@ export default {
     },
 
     async saveToko() {
+      let vm = this;
+      const idToko = await Storage.get({ key: "tokoId" });
+      const dataToken = await Storage.get({ key: "token" });
+      const formData = new FormData()
+
+      formData.append("file1", vm.sendPhoto);
+      formData.append("namaToko", vm.namaToko);
+      formData.append("alamatToko", vm.alamatToko);
+      formData.append("noHpToko", vm.noHpToko);
+      formData.append("noKTPToko", vm.noKTPToko);
+      formData.append("wilayahId", vm.wilayahId);
+
       try {
-        let vm = this;
         await vm.presentLoading();
         // namaToko, alamatToko, noHpToko, noKTPToko, wilayahId
-        const idToko = await Storage.get({ key: "tokoId" });
         // const idUser = await Storage.get({ key: "idUser" });
-        const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(
-          ipConfig + "/masterToko/update/" + idToko.value,
-          {
-            namaToko: vm.namaToko,
-            alamatToko: vm.alamatToko,
-            noHpToko: vm.noHpToko,
-            noKTPToko: vm.noKTPToko,
-            wilayahId: vm.wilayahId,
-          },
+          ipConfig + "/mobile/updateToko/" + idToko.value,
+          formData,
           {
             headers: {
               token: dataToken.value,
             },
           }
         );
-        if (dataResult.data) {
-          vm.note = dataResult.data.toLowerCase().replace(/\w/, firstLetter => firstLetter.toUpperCase());
+        console.log(dataResult);
+        if (dataResult.status == 200) {
+          vm.note = "Toko Berhasil di Update";
         }
         // vm.note.toLowerCase().replace(/\w/, firstLetter => firstLetter.toUpperCase());
         console.log(vm.note);
@@ -259,14 +310,27 @@ export default {
         allowEditing: false,
       });
       let x = await fetch(`${cameraPhoto.webPath}`).then((y) => y.blob());
+      console.log(x);
 
       vm.previewPhoto = cameraPhoto.webPath;
       vm.sendPhoto = x;
+      vm.fotoToko = vm.previewPhoto
+      // const modal = await modalController.create({
+      //   component: modalFotoToko,
+      //   componentProps: {
+      //     previewPhoto: vm.previewPhoto,
+      //     sendPhoto: vm.sendPhoto,
+      //   },
+      // });
+      // await modal.present();
+    },
+
+    async editHargaBarang(barangs) {
+      console.log("barangs", barangs);
       const modal = await modalController.create({
-        component: modalFoto,
+        component: modalHargaBarang,
         componentProps: {
-          previewPhoto: vm.previewPhoto,
-          sendPhoto: vm.sendPhoto,
+          barangs
         },
       });
       await modal.present();
@@ -301,4 +365,13 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.imageContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.marginContainer {
+  margin: auto;
+}
+</style>

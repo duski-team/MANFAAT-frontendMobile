@@ -35,7 +35,7 @@
         </ion-label>
         <ion-label class="ion-text-end">
           <h5>Wilayah</h5>
-          <h2>{{ namaWilayah }}</h2>
+          <h2 v-for="el in option_wilayah" :key="el">{{ el.namaWilayah }}</h2>
         </ion-label>
       </ion-list-header>
 
@@ -98,7 +98,7 @@ import { add, search } from "ionicons/icons";
 import { ipConfig } from "../config";
 import { Storage } from "@capacitor/storage";
 import { useRouter } from "vue-router";
-import modalToko from "@/components/pages/toko/ModalToko.vue";
+import modalCariToko from "@/components/pages/toko/ModalCariToko.vue";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/id";
@@ -139,6 +139,7 @@ export default {
       tanggal: "",
       waktu: "",
       showLoader: false,
+      option_wilayah: [],
     };
   },
 
@@ -150,7 +151,9 @@ export default {
 
   async ionViewDidEnter() {
     await this.dataToko();
+    await this.getDataWilayah();
     await this.testMoment();
+    this.pageToko = 10
   },
 
   methods: {
@@ -220,6 +223,29 @@ export default {
       }
     },
 
+    async getDataWilayah() {
+      let vm = this;
+      vm.option_wilayah = [];
+      try {
+        const dataToken = await Storage.get({ key: "token" });
+        const dataResult = await axios.get(ipConfig + "/mobile/wilayahByUserLogin", {
+          headers: { token: dataToken.value },
+        });
+        if (dataResult.data.status == 200) {
+          for (let i = 0; i < dataResult.data.data.length; i++) {
+            const elWilayah = dataResult.data.data[i];
+            let x = {};
+            x.wilayahId = elWilayah.wilayahId;
+            x.namaWilayah = elWilayah.namaWilayah;
+            vm.option_wilayah.push(x);
+          }
+          console.log(vm.option_wilayah);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
     async testMoment() {
       this.hari = await moment().format("dddd");
       this.tanggal = await moment().format("LL");
@@ -228,7 +254,7 @@ export default {
 
     async searchToko() {
       const modal = await modalController.create({
-        component: modalToko,
+        component: modalCariToko,
       });
       return await modal.present();
     },
