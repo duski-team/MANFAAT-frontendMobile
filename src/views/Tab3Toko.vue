@@ -209,7 +209,7 @@ export default {
     },
 
     async detailToko(p) {
-      console.log(p);
+      // console.log(p);
       await Storage.set({ key: "tokoId", value: p.toString() });
       await this.$router.push("/detailToko");
     },
@@ -239,7 +239,7 @@ export default {
             x.namaWilayah = elWilayah.namaWilayah;
             vm.option_wilayah.push(x);
           }
-          console.log(vm.option_wilayah);
+          // console.log(vm.option_wilayah);
         }
       } catch (err) {
         console.log(err);

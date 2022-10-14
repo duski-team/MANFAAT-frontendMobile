@@ -7,7 +7,8 @@
     </template>
 
     <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
-      <ion-refresher-content :pulling-icon="chevronDownCircleOutline" refreshing-spinner="null"></ion-refresher-content>
+      <!-- <ion-refresher-content :pulling-icon="chevronDownCircleOutline" refreshing-spinner="null"></ion-refresher-content> -->
+      <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
     <ion-grid v-if="profileSales">
@@ -244,7 +245,7 @@ import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import {
   exit,
-  chevronDownCircleOutline,
+  // chevronDownCircleOutline,
   caretForwardOutline,
   caretDownOutline,
 } from "ionicons/icons";
@@ -308,7 +309,7 @@ export default defineComponent({
     return {
       router,
       exit,
-      chevronDownCircleOutline,
+      // chevronDownCircleOutline,
       caretForwardOutline,
       caretDownOutline,
     };

@@ -379,9 +379,9 @@ export default {
       await this.getDataToko();
       await this.getDataWilayah();
     }
-    if (!this.tanggal && !this.waktu) {
-      await this.testMoment();
-    }
+    // if (!this.tanggal && !this.waktu) {
+    // }
+    await this.testMoment();
     await this.discardLoading();
   },
 
@@ -535,7 +535,7 @@ export default {
       } else {
         kirim.halaman = vm.currentPage;
       }
-      console.log(kirim, "kirimannya Toko");
+      // console.log(kirim, "kirimannya Toko");
       try {
         const dataToken = await Storage.get({ key: "token" });
         const dataResult = await axios.post(ipConfig + "/mobile/listTokoBySalesMobile", kirim, {
@@ -543,7 +543,7 @@ export default {
             token: dataToken.value,
           },
         });
-        console.log(dataResult.data.data);
+        // console.log(dataResult.data.data);
         vm.list_toko_mobile = dataResult.data.data;
         for (let i = 0; i < vm.list_toko_mobile.length; i++) {
           const elToko = vm.list_toko_mobile[i];
@@ -563,7 +563,7 @@ export default {
             token: dataToken.value,
           },
         });
-        vm.listToko = dataResult.data.sort((a, b) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0));
+        vm.listToko = dataResult.data.sort((a, b) => (a.master_toko_id > b.master_toko_id ? 1 : b.master_toko_id > a.master_toko_id ? -1 : 0));
       } catch (err) {
         console.log(err, "errornya datatoko");
       }
@@ -572,9 +572,9 @@ export default {
       this.items = this.list_toko_mobile;
     },
     async openCreatePO(paramsnya) {
-      console.log(paramsnya);
-      // await Storage.set({ key: "tokoId", value: paramsnya.toString() });
-      // await this.$router.push("/tabs/order/details");
+      // console.log(paramsnya);
+      await Storage.set({ key: "tokoId", value: paramsnya.master_toko_id });
+      await this.$router.push("/tabs/order/details");
     },
     async openlistPO(paramsnya) {
       await Storage.set({ key: "noPO", value: paramsnya.toString() });

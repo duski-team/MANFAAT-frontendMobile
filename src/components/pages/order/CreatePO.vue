@@ -257,7 +257,7 @@ export default {
         await vm.presentLoading();
         const idToko = await Storage.get({ key: "tokoId" });
         const dataToken = await Storage.get({ key: "token" });
-        // console.log(JSON.stringify(idToko), "<<<<<");
+        // console.log(JSON.stringify(idToko.value), "<<<<<");
         const dataResult = await axios.get(
           ipConfig + "/masterToko/listById/" + idToko.value,
           {
