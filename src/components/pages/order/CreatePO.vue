@@ -130,7 +130,7 @@
     </div>
 
     <div v-else>
-      <h1>Loading...</h1>
+      <h1>Data Barang Kosong</h1>
     </div>
 
     <template v-slot:button-float>
@@ -218,7 +218,7 @@ export default {
       save,
       add,
       trash,
-      tokoId: this.$route.params.id,
+      // tokoId: this.$route.params.id,
       dataToko: [],
       listBarang: [],
       noPO: null,
@@ -232,9 +232,11 @@ export default {
     };
   },
   async ionViewDidEnter() {
+    await this.presentLoading()
     await this.getToko();
     await this.testMoment();
     // await this.getAkun();
+    await this.discardLoading()
   },
   setup() {
     const router = useRouter();
@@ -252,12 +254,12 @@ export default {
 
   methods: {
     async getToko() {
+      let vm = this;
+      console.log(JSON.stringify("masuk toko"));
       try {
-        let vm = this;
-        await vm.presentLoading();
         const idToko = await Storage.get({ key: "tokoId" });
         const dataToken = await Storage.get({ key: "token" });
-        // console.log(JSON.stringify(idToko.value), "<<<<<");
+        console.log(JSON.stringify(idToko.value), "<<<<<");
         const dataResult = await axios.get(
           ipConfig + "/masterToko/listById/" + idToko.value,
           {
@@ -272,12 +274,9 @@ export default {
         // vm.noPO = Math.floor(Math.random() * 10000000)
         vm.noPO = moment().format("YYMMDD.ddHHmmss");
 
-        if (vm.dataToko) {
-          await vm.discardLoading();
-        }
       } catch (err) {
-        console.log(err, "catchnya jon");
-        await this.discardLoading();
+        console.log("catchnya jon");
+        console.log(JSON.stringify(err));
       }
     },
 

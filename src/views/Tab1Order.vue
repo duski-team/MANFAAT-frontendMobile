@@ -110,7 +110,7 @@
                   <ion-item
                     v-for="elm in list_toko_mobile"
                     :key="elm.nomor"
-                    @click="openCreatePO(elm)"
+                    @click="openCreatePO(elm.master_toko_id)"
                     lines="full"
                     detail
                   >
@@ -572,8 +572,8 @@ export default {
       this.items = this.list_toko_mobile;
     },
     async openCreatePO(paramsnya) {
-      // console.log(paramsnya);
-      await Storage.set({ key: "tokoId", value: paramsnya.master_toko_id });
+      console.log(paramsnya);
+      await Storage.set({ key: "tokoId", value: paramsnya.toString() });
       await this.$router.push("/tabs/order/details");
     },
     async openlistPO(paramsnya) {

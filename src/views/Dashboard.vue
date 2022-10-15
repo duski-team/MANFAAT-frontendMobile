@@ -360,6 +360,7 @@ export default defineComponent({
         if (vm.profileSales.wilayah.length > 0) {
           
           let dataWilayahId = ""
+          vm.wilayahSales = []
           vm.profileSales.wilayah.forEach((el, id) => {
             // console.log(el, "<<<<");
             vm.wilayahSales.push(el)
