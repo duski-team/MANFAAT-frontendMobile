@@ -21,43 +21,52 @@ const routes = [
   {
     path: '/tabs/',
     component: Tabs,
-    // meta: { requiredAuth: true },
+    meta: { requiredAuth: true },
     children: [
       {
         path: '',
-        redirect: 'dashboard'
+        redirect: 'dashboard',
+        meta: { requiredAuth: true },
       },
       {
         path: 'dashboard',
         component: () => import('@/views/Dashboard.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'order',
         component: () => import('@/views/Tab1Order.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'order/details',
         component: () => import('@/components/pages/order/CreatePO.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'retur',
         component: () => import('@/views/Tab2Retur.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'retur/create',
         component: () => import('@/components/pages/retur/CreateRetur.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'retur/details',
         component: () => import('@/components/pages/retur/DetailRetur.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'toko',
         component: () => import('@/views/Tab3Toko.vue'),
+        meta: { requiredAuth: true },
       },
       {
         path: 'toko/tambah',
         component: () => import('@/components/pages/toko/TambahToko.vue'),
+        meta: { requiredAuth: true },
       },
     ]
   },

@@ -21,11 +21,7 @@
           <ion-list>
             <ion-item>
               <ion-label>Nama Barang</ion-label>
-              <ion-select
-                placeholder="pilih barang"
-                interface="action-sheet"
-                v-model="pilihBarang.namaBarang"
-              >
+              <ion-select placeholder="pilih barang" interface="action-sheet" v-model="pilihBarang.namaBarang">
                 <ion-select-option
                   v-for="(listBarang, index) in listBarang"
                   :key="index"
@@ -38,7 +34,12 @@
 
             <ion-item v-if="pilihBarang.namaBarang">
               <ion-label>Harga Satuan</ion-label>
-              <ion-input readonly class="ion-text-right" :value="computedHarga.harga" style="padding-right: 5px;"></ion-input>
+              <ion-input
+                readonly
+                class="ion-text-right"
+                :value="computedHarga.harga"
+                style="padding-right: 5px;"
+              ></ion-input>
             </ion-item>
             <ion-item v-else>
               <ion-label>Harga Satuan</ion-label>
@@ -56,11 +57,16 @@
             </ion-item>
 
             <ion-item v-if="pilihBarang.jumlahBarang">
-              <ion-label>Harga Satuan</ion-label>
-              <ion-input readonly class="ion-text-right" :value="computedHarga.totalHarga" style="padding-right: 5px;"></ion-input>
+              <ion-label>Jumlah Harga</ion-label>
+              <ion-input
+                readonly
+                class="ion-text-right"
+                :value="computedHarga.totalHarga"
+                style="padding-right: 5px;"
+              ></ion-input>
             </ion-item>
             <ion-item v-else>
-              <ion-label>Harga Satuan</ion-label>
+              <ion-label>Jumlah Harga</ion-label>
               <ion-input readonly class="ion-text-right" value="-"></ion-input>
             </ion-item>
 
@@ -68,20 +74,12 @@
               <ion-grid>
                 <ion-row>
                   <ion-col>
-                    <ion-button
-                      expand="block"
-                      class="tombol-simpan"
-                      @click="simpanBarang(this.pilihBarang)"
+                    <ion-button expand="block" class="tombol-simpan" @click="simpanBarang(this.pilihBarang)"
                       >Simpan</ion-button
                     >
                   </ion-col>
                   <ion-col>
-                    <ion-button
-                      expand="block"
-                      fill="outline"
-                      @click="closeModal"
-                      >Batal</ion-button
-                    >
+                    <ion-button expand="block" fill="outline" @click="closeModal">Batal</ion-button>
                   </ion-col>
                 </ion-row>
               </ion-grid>
@@ -165,12 +163,17 @@ export default {
           this.pilihBarang.harga2 = el.harga2;
           this.pilihBarang.harga3 = el.harga3;
           this.pilihBarang.masterBarangId = el.masterBarangId;
-          this.pilihBarang.totalHarga =
-            el.harga * Number(this.pilihBarang.jumlahBarang);
+          if (this.pilihBarang.jumlahBarang >= 500) {
+            this.pilihBarang.totalHarga = el.harga3 * Number(this.pilihBarang.jumlahBarang);
+          } else if (this.pilihBarang.jumlahBarang >= 10) {
+            this.pilihBarang.totalHarga = el.harga2 * Number(this.pilihBarang.jumlahBarang);
+          } else {
+            this.pilihBarang.totalHarga = el.harga * Number(this.pilihBarang.jumlahBarang);
+          }
         }
       });
-      return this.pilihBarang
-    }
+      return this.pilihBarang;
+    },
   },
   methods: {
     simpanBarang() {
@@ -179,7 +182,7 @@ export default {
           dataBarang: this.pilihBarang,
           // role: "confirm"
         },
-        { role: "confirm " }
+        { role: "confirm " },
       );
     },
 
@@ -212,15 +215,12 @@ export default {
         await vm.presentLoading();
         const idToko = await Storage.get({ key: "tokoId" });
         const dataToken = await Storage.get({ key: "token" });
-        const dataResult = await axios.get(
-          ipConfig + "/masterToko/listById/" + idToko.value,
-          {
-            headers: {
-              token: dataToken.value,
-            },
-          }
-        );
-        // console.log("result modal", dataResult.data);
+        const dataResult = await axios.get(ipConfig + "/masterToko/listById/" + idToko.value, {
+          headers: {
+            token: dataToken.value,
+          },
+        });
+        console.log("result modal", dataResult.data);
         vm.listBarang = dataResult.data[1];
         await vm.discardLoading();
         // console.log("barangnya", vm.listBarang);
